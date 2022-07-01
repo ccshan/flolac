@@ -1,3 +1,22 @@
+/preamble.tex
+/Tree.tex
+/Arith.tex
+/TreeState.tex
+/ArithState.tex
+/TreeMaybe.tex
+/ArithMaybe.tex
+/TreeNondet.tex
+/SendMoreMoney.tex
+/ArithNondet.tex
+/ArithMonad.tex
+/ArithIO.tex
+/ArithDo.tex
+/Traverse.tex
+/StateIO.tex
+/StateMaybe.tex
+/StateNondet.tex
+
+*.ptb
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
