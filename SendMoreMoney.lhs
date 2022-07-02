@@ -39,3 +39,6 @@ main =  print (
                      ++ "=" ++ show m  ++  show o  ++ show n  ++ show e  ++ show y]))))))))))))))))
           [0..9])
 \end{code}
+
+Challenge: Generalize to TO + GO = OUT.\\
+Use state to remember letters whose digits have been chosen.

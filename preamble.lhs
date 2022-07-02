@@ -8,6 +8,7 @@
 %format ||  = "\mathbin{\Vert}"
 %format &&  = "\mathbin{\&\&}"
 %format not = "\Varid{not}"
+%format M.! = "\mathbin{\Conid{M}.!}"
 %include forall.fmt
 %format period_ = "\mathpunct{.}"
 

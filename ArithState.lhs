@@ -46,3 +46,10 @@ return []
 main = $quickCheckAll
 \end{code}
 \end{comment}
+
+Challenge: Memory allocation
+\begin{spec}
+data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
+           |  New Expr | Get Expr | Put Expr Expr
+\end{spec}
+How can this be useful?

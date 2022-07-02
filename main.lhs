@@ -23,6 +23,8 @@ main = return ()
 \excludecomment{challenge}
 \includecomment{nonchallenge}
 
+\usepackage{tikz}
+
 \begin{document}
 
 \title{Monad and side effects}
@@ -54,9 +56,10 @@ Basically, a side effect is something that a piece of code does besides turning 
 
 \input{TreeState}
 
-\includegraphics[width=\textwidth]{say-it}
+\noindent\includegraphics[width=\textwidth]{say-it}
 
 \subsection{Local vs global state}
+\input{UnionFind}
 Pointers, references, file system
 
 \subsection{Interpreter}
