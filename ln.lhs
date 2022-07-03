@@ -391,6 +391,7 @@ factor  :: Double -> Dist ()
 \section{Automatic differentiation}
 
 \citep{krawiec-provably}
+\citep{claessen-quickcheck}
 
 \bibliographystyle{mcbride}
 \bibliography{ccshan}

@@ -16,6 +16,7 @@
 /StateIO.tex
 /StateMaybe.tex
 /StateNondet.tex
+/Diff.tex
 
 *.ptb
 ## Core latex/pdflatex auxiliary files:

@@ -39,75 +39,75 @@ prop_eval1 = eval (Let "x" (Add (Lit 3) (Lit (-1)))
 prop_eval2 x = let x' = Lit (fromInteger x)
                in eval (Pow x' 2) M.empty == eval (Mul x' x') M.empty
 
-data Dual = Dual Double Diff
+data Dual = Dual Double Delta
     deriving (Eq, Show)
-data Diff = Zero | DVar V | DAdd Diff Diff | DMul Double Diff
+data Delta = Zero | DVar DeltaId | DAdd Delta Delta | DMul Double Delta
     deriving (Eq, Show)
-newtype V = V Int
+newtype DeltaId = DeltaId Int
     deriving (Eq, Ord, Show, Enum)
 
-data S = S V [Diff]
+data DeltaState = DeltaState DeltaId [Delta]
     deriving (Eq, Show)
-type M = State S
+type M = State DeltaState
 
-let_ :: Diff -> M Diff
-let_ d = state (\(S next ds) -> (DVar next, S (succ next) (d : ds)))
+deltaLet :: Delta -> M DeltaId
+deltaLet d = state (\(DeltaState next ds) -> (next, DeltaState (succ next) (d : ds)))
 
 diff :: E -> Env Dual -> M Dual
 diff (Lit x)       _   = return (Dual x Zero)
 diff (Var v)       env = return (env M.! v)
 diff (Add e1 e2)   env = do Dual x1 d1 <- diff e1 env
                             Dual x2 d2 <- diff e2 env
-                            d <- let_ (DAdd d1 d2)
-                            return (Dual (x1 + x2) d)
+                            d <- deltaLet (DAdd d1 d2)
+                            return (Dual (x1 + x2) (DVar d))
 diff (Mul e1 e2)   env = do Dual x1 d1 <- diff e1 env
                             Dual x2 d2 <- diff e2 env
-                            d <- let_ (DAdd (DMul x2 d1) (DMul x1 d2))
-                            return (Dual (x1 * x2) d)
+                            d <- deltaLet (DAdd (DMul x2 d1) (DMul x1 d2))
+                            return (Dual (x1 * x2) (DVar d))
 diff (Pow e y)     env = do Dual x dx <- diff e env
-                            d <- let_ (DMul (y * x ** (y - 1)) dx)
-                            return (Dual (x ** y) d)
+                            d <- deltaLet (DMul (y * x ** (y - 1)) dx)
+                            return (Dual (x ** y) (DVar d))
 diff (Exp e)       env = do Dual x dx <- diff e env
-                            d <- let_ (DMul (exp x) dx)
-                            return (Dual (exp x) d)
+                            d <- deltaLet (DMul (exp x) dx)
+                            return (Dual (exp x) (DVar d))
 diff (Let n rhs e) env = do dual <- diff rhs env
                             diff e (M.insert n dual env)
 
-type Accum = M.Map V Double
+type DeltaMap = M.Map DeltaId Double
 
-accum :: Double -> Diff -> Accum -> Accum
-accum _      Zero         = id
-accum factor (DVar v)     = M.insertWith (+) v factor
-accum factor (DAdd d1 d2) = accum factor d1 . accum factor d2
-accum factor (DMul x d)   = accum (factor * x) d
+evalDelta :: Double -> Delta -> DeltaMap -> DeltaMap
+evalDelta _      Zero         = id
+evalDelta factor (DVar v)     = M.insertWith (+) v factor
+evalDelta factor (DAdd d1 d2) = evalDelta factor d1 . evalDelta factor d2
+evalDelta factor (DMul x d)   = evalDelta (factor * x) d
 
-runDiff :: E -> Env Dual -> (Double, M.Map V Double)
+runDiff :: E -> Env Dual -> (Double, M.Map DeltaId Double)
 runDiff e env =
-  let (Dual y dy, S next ds) = runState (diff e env) (S (V 0) [])
+  let (Dual y dy, DeltaState next ds) = runState (diff e env) (DeltaState (DeltaId 0) [])
       unravel (v, acc) d =
         (pred v, case M.findWithDefault 0 v acc of
                    0 -> acc
-                   factor -> accum factor d (M.delete v acc))
+                   factor -> evalDelta factor d (M.delete v acc))
   in (y, snd (foldl unravel (next, M.singleton next 1) (dy:ds)))
 
 prop_runDiff1 = runDiff (Mul (Var "x") (Var "x"))
-                        (M.singleton "x" (Dual 3 (DVar (V (-1)))))
-                == (9, M.singleton (V (-1)) 6)
+                        (M.singleton "x" (Dual 3 (DVar (DeltaId (-1)))))
+                == (9, M.singleton (DeltaId (-1)) 6)
 prop_runDiff2 = runDiff (Exp (Add (Var "x") (Mul (Lit 2) (Var "y"))))
-                        (M.fromList [("x", Dual 3 (DVar (V (-1)))),
-                                     ("y", Dual 4 (DVar (V (-2))))])
-                == (exp 11, M.fromList [(V (-1), exp 11),
-                                        (V (-2), exp 11 * 2)])
+                        (M.fromList [("x", Dual 3 (DVar (DeltaId (-1)))),
+                                     ("y", Dual 4 (DVar (DeltaId (-2))))])
+                == (exp 11, M.fromList [(DeltaId (-1), exp 11),
+                                        (DeltaId (-2), exp 11 * 2)])
 prop_runDiff3 = runDiff (Pow (Add (Var "x") (Mul (Lit 2) (Var "y"))) 3)
-                        (M.fromList [("x", Dual 3 (DVar (V (-1)))),
-                                     ("y", Dual 4 (DVar (V (-2))))])
-                == (11**3, M.fromList [(V (-1), 3*11**2),
-                                       (V (-2), 3*11**2*2)])
+                        (M.fromList [("x", Dual 3 (DVar (DeltaId (-1)))),
+                                     ("y", Dual 4 (DVar (DeltaId (-2))))])
+                == (11**3, M.fromList [(DeltaId (-1), 3*11**2),
+                                       (DeltaId (-2), 3*11**2*2)])
 
 runDiff' :: E -> Env Double -> (Double, Env Double)
 runDiff' e env = (y, M.map (\(_, v) -> md M.! v) mv)
   where mv = evalState (mapM (\x -> state (\v -> ((x, v), pred v))) env)
-                       (V (-1))
+                       (DeltaId (-1))
         mx = M.map (\(x, v) -> Dual x (DVar v)) mv
         (y, md) = runDiff e mx
 

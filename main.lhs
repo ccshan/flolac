@@ -167,6 +167,10 @@ Disprove left distributivity for $+\!\!+\!\!+$
 type Dist = WriterT (Product Double) []
 \end{spec}
 
+\section{Automatic differentiation}
+\citep{krawiec-provably}
+\input{Diff}
+
 \bibliographystyle{mcbride}
 \bibliography{ccshan}
 
