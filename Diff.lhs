@@ -24,7 +24,6 @@ import Control.Monad.Identity
 import System.Random (getStdRandom, randomR)
 import Numeric (showGFloat)
 import Control.Monad.Trans.State
-import Data.Foldable (traverse_)
 import qualified Data.Map as M
 
 data Expr  =  Lit Double
@@ -169,7 +168,7 @@ showF v = showGFloat (Just 3) v ""
 
 optimize :: Params -> IO ()
 optimize params = do
-  traverse_ (\v -> putStr (showF v ++ " ")) params
+  mapM_ (\v -> putStr (showF v ++ " ")) params
   putStrLn ("=> " ++ showF (runIdentity (eval loss params)))
   optimize (iterate stepParams params !! 1000)
 \end{spec}
@@ -378,6 +377,9 @@ eval4 (Exp e)        env  = do  (v, u) <- eval4 e env
                                 return (exp v, u)
 \end{code}
 \end{solution}
+
+|DeltaBinds| can be a mutable array that grows in |deltaLet|.\\
+|DeltaMap| can be a mutable array that shrinks in |evalDelta|.
 
 \begin{comment}
 \begin{code}

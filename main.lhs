@@ -84,21 +84,20 @@ Pointers, references, file system
 \subsection{Interpreter}
 \input{ArithNondet}
 
-\section{Monads and type classes}
+\section{Monads}
 
 Abstract from $\Conid{Expr}$ interpreter. \citep{wadler-monads}
 
-Type classes. Examples: $\Conid{Eq}$, $\Conid{Ord}$, $\Conid{Show}$. \citep{wadler-ad-hoc}
+\section{Type classes}
+
+Examples: $\Conid{Eq}$, $\Conid{Ord}$, $\Conid{Show}$. \citep{wadler-ad-hoc}
 
 $\Conid{Monad}$ class, inheriting from $\Conid{Applicative}$, inheriting from $\Conid{Functor}$.
 
-\subsection{Interpreter}
 \input{ArithMonad}
 
-\subsection{IO monad}
+\section{Imperative programming}
 \input{ArithIO}
-
-How (and in what monad) to interpret this language is an open-ended question.
 
 \begin{quote}
     A value of type |IO a| is an ``action'' that, when performed, may do some
@@ -166,6 +165,8 @@ Disprove left distributivity for $+\!\!+\!\!+$
 \begin{spec}
 type Dist = WriterT (Product Double) []
 \end{spec}
+
+\section{Neural nets}
 
 \section{Automatic differentiation}
 \citep{krawiec-provably}

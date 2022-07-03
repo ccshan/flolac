@@ -8,7 +8,10 @@
 
 \begin{code}
 data Expr = Lit Int | Add Expr Expr | Mul Expr Expr | Input | Output Expr
+\end{code}
+How (and in what monad) to interpret this language is an open-ended question.
 
+\begin{code}
 eval :: Expr -> IO Int
 eval Input       =  getLine >>= \str -> return (read str)
 eval (Output e)  =  eval e >>= \v -> print v >>= \() -> return v
