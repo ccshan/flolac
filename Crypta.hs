@@ -1,40 +1,44 @@
-{-# OPTIONS -W #-}
+%include preamble.lhs
 
-import qualified Data.Map as M
-import Control.Monad (guard)
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.State
+\begin{code}
+import Data.List (delete)
 
-data S = S (M.Map Char Int) (M.Map Int Char) deriving (Show)
-type M = StateT S []
+type Digit = Int
+type Answer = String
+type Body = [Digit] -> [Answer]
 
-digit :: Char -> M Int
-digit c = do S c_i i_c <- get
-             case M.lookup c c_i of
-               Just i -> return i
-               Nothing -> do i <- lift (M.keys (M.difference poss i_c))
-                             put (S (M.insert c i c_i) (M.insert i c i_c))
-                             return i
-  where poss = M.fromDistinctAscList (zip [0..9] (repeat ()))
+digit :: (Digit -> Body) -> Body
+digit fun remain = concatMap (\digit -> fun digit (delete digit remain)) remain
 
-add :: Char -> Char -> Char -> Int -> M Int
-add a b c carry = do x <- digit a
-                     y <- digit b
-                     z <- digit c
-                     let (carry', z') = divMod (x + y + carry) 10
-                     guard (z == z')
-                     return carry'
+check :: Bool -> Body -> Body
+check bool body remain = if bool then body remain else []
 
-adds :: [(Char, Char, Char)] -> Int -> M Int
-adds [] carry = return carry
-adds ((a,b,c):rest) carry = add a b c carry >>= adds rest
+add :: Digit -> Digit -> Digit -> Digit -> (Digit -> Body) -> Body
+add in1 in2 out carry fun =
+  let (carry', out') = divMod (in1 + in2 + carry) 10
+  in check (out == out') (fun carry')
 
-solve :: M ()
-solve = do carry <- adds (reverse (zip3 "SEND" "MORE" "ONEY")) 0
-           s <- digit 'S'
-           guard (s > 0)
-           m <- digit 'M'
-           guard (m > 0 && carry == m)
+main =  print (
+          (  digit (\d ->
+             digit (\e ->
+             digit (\y ->
+             add d e y 0 (\carry ->
+             digit (\n ->
+             digit (\r ->
+             add n r e carry (\carry ->
+             digit (\o ->
+             add e o n carry (\carry ->
+             digit (\s ->
+             check (s > 0) (
+             digit (\m ->
+             check (m > 0) (
+             add s m o carry (\carry ->
+             check (carry == m) (
+              \ _  -> [                    show s  ++ show e  ++ show n  ++ show d
+                     ++ "+"            ++  show m  ++ show o  ++ show r  ++ show e
+                     ++ "=" ++ show m  ++  show o  ++ show n  ++ show e  ++ show y]))))))))))))))))
+          [0..9])
+\end{code}
 
-main :: IO ()
-main = print (execStateT solve (S M.empty M.empty))
+Challenge: Generalize to TO + GO = OUT.\\
+Use state to remember letters whose digits have been chosen.
