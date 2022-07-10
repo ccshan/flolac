@@ -85,7 +85,66 @@ unique (Branch t1 t2)  =  unique t1 && unique t2
 \noindent\includegraphics[width=\textwidth]{say-it}
 
 \subsection{Local vs global state}
-\input{UnionFind}
+\texttt{UnionFind-1.hs}
+
+\noindent
+\begin{minipage}[t]{22em}
+\begin{spec}
+testState :: State
+testState = M.fromList  [  (Key 100, Root 0 "A")
+                        ,  (Key 101, Link (Key 104))
+                        ,  (Key 102, Root 1 "C")
+                        ,  (Key 103, Link (Key 102))
+                        ,  (Key 104, Root 1 "E")
+                        ,  (Key 105, Root 0 "F")  ]
+\end{spec}
+\end{minipage}
+\begin{tikzpicture}[>=stealth,baseline=2cm]
+    \node (100) at (0,1) {100};
+    \node (101) at (1,0) {101};
+    \node (102) at (2,1) {102};
+    \node (103) at (2,0) {103};
+    \node (104) at (1,1) {104};
+    \node (105) at (3,1) {105};
+    \draw [->] (101) -- (104);
+    \draw [->] (103) -- (102);
+    \draw (-.7,-.5) rectangle (3.7,1.5);
+\end{tikzpicture}
+
+\noindent
+\begin{minipage}[t]{22em}
+\begin{spec}
+testState' :: State
+testState'  = M.fromList   [  (Key 100, Root 0 "A")
+                           ,  (Key 101, Link (Key 104))
+                           ,  (Key 102, Link (Key 104))
+                           ,  (Key 103, Link (Key 102))
+                           ,  (Key 104, Root 2 "E")
+                           ,  (Key 105, Link (Key 108))
+                           ,  (Key 106, Link (Key 108))
+                           ,  (Key 107, Link (Key 106))
+                           ,  (Key 108, Root 2 "I")  ]
+\end{spec}
+\end{minipage}
+\begin{tikzpicture}[>=stealth,baseline=2cm]
+    \node (100) at (0,1) {100};
+    \node (101) at (1,0) {101};
+    \node (102) at (2,1) {102};
+    \node (103) at (2,0) {103};
+    \node (104) at (1,1) {104};
+    \node (105) at (3,0) {105};
+    \node (106) at (4,1) {106};
+    \node (107) at (4,0) {107};
+    \node (108) at (3,1) {108};
+    \draw [->] (101) -- (104);
+    \draw [->] (102) -- (104);
+    \draw [->] (103) -- (102);
+    \draw [->] (105) -- (108);
+    \draw [->] (106) -- (108);
+    \draw [->] (107) -- (106);
+    \draw (-.7,-.5) rectangle (4.7,1.5);
+\end{tikzpicture}
+
 Pointers, references, file system
 
 \subsection{Interpreter}
