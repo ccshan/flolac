@@ -88,4 +88,4 @@ union k1 k2 s =  let  (k1', r1, _,  s')   = find k1 s
 #endif
 
 return []
-main = $quickCheckAll
+main = $quickCheckAll >>= print

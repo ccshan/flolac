@@ -43,7 +43,7 @@ For modular reuse, abstract from similarities over differences: |sumTree| vs |pr
 \subsection{Interpreter}
 \texttt{Arith-1.hs}
 
-\subsection{Challenge: local variable binding}
+Challenge: local variable binding
 \texttt{Arith-2.hs}
 
 \section{State}
@@ -151,30 +151,48 @@ Pointers, references, file system
 \texttt{ArithState-1.hs}
 
 Challenge: Memory allocation
+\texttt{ArithState-2.hs}
 \begin{spec}
 data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
            |  New Expr | Get Expr | Put Expr Expr
+type State = [Int]
 \end{spec}
 How can this be useful?
 
 \section{Exception}
 
 \subsection{Tree}
-\input{TreeMaybe}
+\texttt{TreeMaybe-1.hs}
 
 \subsection{Interpreter}
-\input{ArithMaybe}
+\texttt{ArithMaybe-1.hs}
 
 \section{Nondeterminism}
 
 \subsection{Tree}
-\input{TreeNondet}
+\texttt{TreeNondet-1.hs}
+\begin{spec}
+blackjack' :: Tree -> Int -> [Int]
+blackjack' (Leaf n)        total  =  if total + n > 21 then total
+                                     else amb [total, total + n]
+blackjack' (Branch t1 t2)  total  =  blackjack' t2 (blackjack' t1 total)
+\end{spec}
 
 \subsection{SEND + MORE = MONEY}
-\input{SendMoreMoney}
+\texttt{Crypta-1.hs}
+
+Loop bodies are continuation functions.
+
+Prepone checking to avoid futile generation.
+
+\texttt{Crypta-2.hs}
+
+Use state to remember letters whose digits have been chosen.
+
+Generalize to TO + GO = OUT.
 
 \subsection{Interpreter}
-\input{ArithNondet}
+\texttt{ArithNondet-1.hs}
 
 \section{Monads}
 
@@ -186,10 +204,14 @@ Examples: $\Conid{Eq}$, $\Conid{Ord}$, $\Conid{Show}$. \citep{wadler-ad-hoc}
 
 $\Conid{Monad}$ class, inheriting from $\Conid{Applicative}$, inheriting from $\Conid{Functor}$.
 
-\input{ArithMonad}
+\texttt{ArithMonad-1.hs}
+\texttt{ArithMonad-2.hs}
+\texttt{ArithMonad-3.hs}
 
 \section{Imperative programming}
-\input{ArithIO}
+\texttt{ArithIO-1.hs}
+
+How (and in what monad) to interpret |Input| and |Output| is an open-ended question.
 
 \begin{quote}
     A value of type |IO a| is an ``action'' that, when performed, may do some
@@ -203,19 +225,13 @@ Execution by \emph{monad laws} and labeled transitions (\citep[Figure~3]{peyton-
 Translating impure programs to monadic form
 
 \subsection{Do notation}
-\input{ArithDo}
+\texttt{ArithDo-1.hs}
+\texttt{ArithDo-2.hs}
+\texttt{ArithDo-3.hs}
+\texttt{ArithDo-4.hs}
 
 \subsection{Polymorphism across monads}
-\input{Traverse}
-
-\begin{solution}
-\begin{spec}
-m >>= k   = join (fmap k m)
-
-fmap f m  = m >>= \a -> return (f a)
-join m    = m >>= id
-\end{spec}
-\end{solution}
+\texttt{Traverse-1.hs}
 
 \section{Combining side effects}
 

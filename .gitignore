@@ -1,14 +1,5 @@
 /preamble.tex
 /*-[1-9].hs
-/TreeMaybe.tex
-/ArithMaybe.tex
-/TreeNondet.tex
-/SendMoreMoney.tex
-/ArithNondet.tex
-/ArithMonad.tex
-/ArithIO.tex
-/ArithDo.tex
-/Traverse.tex
 /StateIO.tex
 /StateMaybe.tex
 /StateNondet.tex
