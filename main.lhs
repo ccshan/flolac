@@ -52,7 +52,35 @@ Certain programming tasks make us intuitively reach for side effects.
 
 Basically, a side effect is something that a piece of code does besides turning input arguments into return values.
 
-\input{TreeState}
+\subsection{Accumulator passing}
+
+\texttt{TreeState-1.hs}
+
+\begin{spec}
+result := 0
+sumTree (Leaf n)        =  result := result + n;
+                           result
+sumTree (Branch t1 t2)  =  sumTree t1;
+                           sumTree t2
+\end{spec}
+
+\subsection{State threading}
+
+\texttt{TreeState-2.hs}
+
+\begin{spec}
+next := 0
+relabel (Leaf _)        =  next := next + 1;
+                           Leaf next
+relabel (Branch t1 t2)  =  Branch (relabel t1) (relabel t2)
+\end{spec}
+
+\begin{spec}
+seen := S.empty
+unique (Leaf n)        =  if S.member n seen then False
+                          else seen := S.insert n seen; True
+unique (Branch t1 t2)  =  unique t1 && unique t2
+\end{spec}
 
 \noindent\includegraphics[width=\textwidth]{say-it}
 
@@ -61,7 +89,14 @@ Basically, a side effect is something that a piece of code does besides turning 
 Pointers, references, file system
 
 \subsection{Interpreter}
-\input{ArithState}
+\texttt{ArithState-1.hs}
+
+Challenge: Memory allocation
+\begin{spec}
+data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
+           |  New Expr | Get Expr | Put Expr Expr
+\end{spec}
+How can this be useful?
 
 \section{Exception}
 

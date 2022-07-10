@@ -73,4 +73,4 @@ eval' (Let n rhs e) env = eval' e (M.insert n (eval' rhs env) env)
 #endif
 
 return []
-main = $quickCheckAll
+main = $quickCheckAll >>= print

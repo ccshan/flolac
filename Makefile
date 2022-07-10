@@ -1,6 +1,6 @@
-all: ln.pdf main.pdf Tree-1.hs Arith-1.hs Arith-2.hs
+all: ln.pdf main.pdf Tree-1.hs Arith-1.hs Arith-2.hs TreeState-1.hs TreeState-2.hs ArithState-1.hs
 
-main.pdf: preamble.tex TreeState.tex UnionFind.tex ArithState.tex TreeMaybe.tex ArithMaybe.tex TreeNondet.tex SendMoreMoney.tex ArithNondet.tex ArithMonad.tex ArithIO.tex ArithDo.tex Traverse.tex StateIO.tex StateMaybe.tex StateNondet.tex Diff.tex
+main.pdf: preamble.tex UnionFind.tex TreeMaybe.tex ArithMaybe.tex TreeNondet.tex SendMoreMoney.tex ArithNondet.tex ArithMonad.tex ArithIO.tex ArithDo.tex Traverse.tex StateIO.tex StateMaybe.tex StateNondet.tex Diff.tex
 
 %-1.hs: %.hs
 	runhaskell -cpp -DSTEP=1 -DSOLUTION $<

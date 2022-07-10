@@ -28,4 +28,4 @@ incTree (Branch t1 t2)     = Branch (incTree t1) (incTree t2)
 #endif
 
 return []
-main = $quickCheckAll
+main = $quickCheckAll >>= print
