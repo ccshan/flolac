@@ -1,6 +1,5 @@
 /preamble.tex
-/Tree.tex
-/Arith.tex
+/*-[1-9].hs
 /TreeState.tex
 /UnionFind.tex
 /ArithState.tex

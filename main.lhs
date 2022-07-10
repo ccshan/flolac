@@ -20,8 +20,6 @@ main = return ()
 
 \usepackage{comment}
 \excludecomment{solution}
-\excludecomment{challenge}
-\includecomment{nonchallenge}
 
 \usepackage{tikz}
 
@@ -38,15 +36,15 @@ So, if you want to do something, say what doing it means.
 \section{Warm up}
 
 \subsection{Pure recursion}
-\input{Tree}
+\texttt{Tree-1.hs}
 
 For modular reuse, abstract from similarities over differences: |sumTree| vs |productTree|
 
 \subsection{Interpreter}
-\input{Arith}
+\texttt{Arith-1.hs}
 
 \subsection{Challenge: local variable binding}
-{\includecomment{challenge}\excludecomment{nonchallenge}\input{Arith}}
+\texttt{Arith-2.hs}
 
 \section{State}
 
