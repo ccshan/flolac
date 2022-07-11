@@ -27,6 +27,12 @@ main = do putStr "puzzle1 = "
           print (runM puzzle1 100)
           putStr "puzzle2 = "
           print (runM puzzle2 100)
+#if STEP == 4
+          if runM ((law_m >> law_k) >> law_l) 100 ==
+             runM (law_m >> (law_k >> law_l)) 100
+             then putStrLn "Keep trying to disprove monad associativity..."
+             else putStrLn "Congratulations! You disproved monad associativity"
+#endif
 
 puzzle1 :: M Int
 puzzle1 = eval (Amb (Put (Add Get (Lit 1)))
@@ -138,5 +144,20 @@ amb (m:ms) =
 #ifdef SOLUTION
              m <|> amb ms
 -- or amb = Data.Foldable.asum
+#endif
+
+law_m :: M ()
+law_k :: M ()
+law_l :: M ()
+#ifdef SOLUTION
+law_m = amb [append 1, append 1]
+law_k = append 2
+law_l = append 3
+append :: Int -> M ()
+append n = lift (modify (\s -> s * 10 + n))
+#else
+law_m = return ()
+law_k = return ()
+law_l = return ()
 #endif
 #endif

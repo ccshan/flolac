@@ -26,12 +26,12 @@ StateMaybe-2.hs: StateMaybe.hs StateMaybe-2.out
 	runhaskell -cpp -DSTEP=2 -DSOLUTION $< | diff - StateMaybe-2.out
 	cpp -traditional-cpp -P -DSTEP=2 $< -o - | perl -00 -pe '' > $@
 
-StateMaybe-3.hs: StateMaybe.hs StateMaybe-1.out
-	runhaskell -cpp -DSTEP=3 -DSOLUTION $< | diff - StateMaybe-1.out
+StateMaybe-3.hs: StateMaybe.hs StateMaybe-3.out
+	runhaskell -cpp -DSTEP=3 -DSOLUTION $< | diff - StateMaybe-3.out
 	cpp -traditional-cpp -P -DSTEP=3 $< -o - | perl -00 -pe '' > $@
 
-StateMaybe-4.hs: StateMaybe.hs StateMaybe-2.out
-	runhaskell -cpp -DSTEP=4 -DSOLUTION $< | diff - StateMaybe-2.out
+StateMaybe-4.hs: StateMaybe.hs StateMaybe-4.out
+	runhaskell -cpp -DSTEP=4 -DSOLUTION $< | diff - StateMaybe-4.out
 	cpp -traditional-cpp -P -DSTEP=4 $< -o - | perl -00 -pe '' > $@
 
 StateNondet-1.hs: StateNondet.hs StateNondet-1.out
@@ -42,12 +42,12 @@ StateNondet-2.hs: StateNondet.hs StateNondet-2.out
 	runhaskell -cpp -DSTEP=2 -DSOLUTION $< | diff - StateNondet-2.out
 	cpp -traditional-cpp -P -DSTEP=2 $< -o - | perl -00 -pe '' > $@
 
-StateNondet-3.hs: StateNondet.hs StateNondet-1.out
-	runhaskell -cpp -DSTEP=3 -DSOLUTION $< | diff - StateNondet-1.out
+StateNondet-3.hs: StateNondet.hs StateNondet-3.out
+	runhaskell -cpp -DSTEP=3 -DSOLUTION $< | diff - StateNondet-3.out
 	cpp -traditional-cpp -P -DSTEP=3 $< -o - | perl -00 -pe '' > $@
 
-StateNondet-4.hs: StateNondet.hs StateNondet-2.out
-	runhaskell -cpp -DSTEP=4 -DSOLUTION $< | diff - StateNondet-2.out
+StateNondet-4.hs: StateNondet.hs StateNondet-4.out
+	runhaskell -cpp -DSTEP=4 -DSOLUTION $< | diff - StateNondet-4.out
 	cpp -traditional-cpp -P -DSTEP=4 $< -o - | perl -00 -pe '' > $@
 
 %-1.hs: %.hs

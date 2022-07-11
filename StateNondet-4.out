@@ -1,0 +1,3 @@
+puzzle1 = ([101,103],103)
+puzzle2 = ([(),()],103)
+Congratulations! You disproved monad associativity

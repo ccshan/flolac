@@ -253,6 +253,8 @@ Translating impure programs to monadic form
 \texttt{StateIO-3.hs}
 \texttt{StateMaybe-3.hs}
 \texttt{StateMaybe-4.hs}
+\texttt{StateNondet-3.hs}
+\texttt{StateNondet-4.hs}
 \citep{liang-interpreter}
 
 \begin{spec}
