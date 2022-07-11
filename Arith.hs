@@ -26,16 +26,16 @@ prop_eval1     = eval (Add (Lit 2) (Lit 3)) == 5
 prop_eval2     = eval (Mul (Add (Lit 1) (Lit 1)) (Lit 3)) == 6
 prop_evalLit v = eval (Lit v) == v
 #if STEP == 2
-prop_evalLet1  = eval (Let  "x" (Add (Lit 1) (Lit 2))
-                            (Mul (Var "x") (Var "x")))
+prop_evalLet1  = eval (Let "x" (Add (Lit 1) (Lit 2))
+                           (Mul (Var "x") (Var "x")))
                  == 9
-prop_evalLet2  = eval (Let  "y" (Add (Lit 1) (Lit 1))
-                            (Let  "x" (Add (Lit 1) (Var "y"))
-                                  (Mul (Var "y") (Var "x"))))
+prop_evalLet2  = eval (Let "y" (Add (Lit 1) (Lit 1))
+                           (Let "x" (Add (Lit 1) (Var "y"))
+                                (Mul (Var "y") (Var "x"))))
                  == 6
-prop_evalLet3  = eval (Let  "x" (Add (Lit 1) (Lit 1))
-                            (Let  "x" (Add (Lit 1) (Var "x"))
-                                  (Mul (Var "x") (Var "x"))))
+prop_evalLet3  = eval (Let "x" (Add (Lit 1) (Lit 1))
+                           (Let "x" (Add (Lit 1) (Var "x"))
+                                (Mul (Var "x") (Var "x"))))
                  == 9
 eval e = eval' e M.empty
 
@@ -59,9 +59,9 @@ instance Arbitrary Expr where
   shrink = genericShrink
 
 #if STEP == 1
-eval (Lit v)            = v
-eval (Add e1 e2)        = eval e1 + eval e2
-eval (Mul e1 e2)        = eval e1 * eval e2
+eval (Lit v)     = v
+eval (Add e1 e2) = eval e1 + eval e2
+eval (Mul e1 e2) = eval e1 * eval e2
 #endif
 #if STEP == 2
 eval' (Lit v)       _   = v

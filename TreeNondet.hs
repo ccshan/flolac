@@ -24,9 +24,9 @@ blackjack t = blackjack' t 0
 blackjack' :: Tree -> Int -> [Int]
 
 #ifdef SOLUTION
-blackjack' (Leaf n)        total  =  if total + n > 21 then [total]
-                                     else [total, total + n]
-blackjack' (Branch t1 t2)  total  =  concatMap (blackjack' t2) (blackjack' t1 total)
+blackjack' (Leaf n)       total = if total + n > 21 then [total]
+                                  else [total, total + n]
+blackjack' (Branch t1 t2) total = concatMap (blackjack' t2) (blackjack' t1 total)
 #endif
 
 return []

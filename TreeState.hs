@@ -18,7 +18,7 @@ sumTree' :: Tree -> Int -> Int
 #ifdef SOLUTION
 sumTree t = sumTree' t 0
 
-sumTree' (Leaf n) result       = result + n
+sumTree' (Leaf n)       result = result + n
 sumTree' (Branch t1 t2) result = let result1 = sumTree' t1 result
                                      result2 = sumTree' t2 result1
                                  in result2
@@ -51,18 +51,18 @@ unique'' :: Tree ->              (Bool, S.Set Int)
 #ifdef SOLUTION
 unique t = let (u, _) = unique' t S.empty in u
 
-unique' (Leaf n)        seen  =  if S.member n seen then (False, seen)
-                                 else (True, S.insert n seen)
-unique' (Branch t1 t2)  seen  =  let  (u1, seen1) = unique' t1 seen
-                                      (u2, seen2) = unique' t2 seen1
-                                 in (u1 && u2, seen2)
+unique' (Leaf n)       seen = if S.member n seen then (False, seen)
+                              else (True, S.insert n seen)
+unique' (Branch t1 t2) seen = let (u1, seen1) = unique' t1 seen
+                                  (u2, seen2) = unique' t2 seen1
+                              in (u1 && u2, seen2)
 
 -- unique t = let (u, _) = unique'' t in u
 
-unique'' (Leaf n)        =  (True, S.singleton n)
-unique'' (Branch t1 t2)  =  let  (u1, seen1) = unique'' t1
-                                 (u2, seen2) = unique'' t2
-                            in (u1 && u2 && S.disjoint seen1 seen2, S.union seen1 seen2)
+unique'' (Leaf n)       = (True, S.singleton n)
+unique'' (Branch t1 t2) = let (u1, seen1) = unique'' t1
+                              (u2, seen2) = unique'' t2
+                          in (u1 && u2 && S.disjoint seen1 seen2, S.union seen1 seen2)
 #endif
 #endif
 

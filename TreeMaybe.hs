@@ -14,10 +14,10 @@ prop_dec2 = decTree (Branch (Leaf 1) (Branch (Leaf 3) (Leaf 0)))
 #ifdef SOLUTION
 decTree (Leaf n)       = if n > 0 then Just (Leaf (n-1)) else Nothing
 decTree (Branch t1 t2) = case decTree t1 of
-                           Nothing   ->  Nothing
-                           Just t1'  ->  case decTree t2 of
-                                           Nothing   ->  Nothing
-                                           Just t2'  ->  Just (Branch t1' t2')
+                           Nothing  -> Nothing
+                           Just t1' -> case decTree t2 of
+                                         Nothing  -> Nothing
+                                         Just t2' -> Just (Branch t1' t2')
 #endif
 
 productTree :: Tree -> Int

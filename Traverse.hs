@@ -48,9 +48,9 @@ traverseTree f (Branch t1 t2) = do t1' <- traverseTree f t1
 
 #ifdef SOLUTION
 edit :: (Show a, Read a) => a -> IO a
-edit a = do  print a
-             str <- getLine
-             return (fromMaybe a (readMaybe str))
+edit a = do print a
+            str <- getLine
+            return (fromMaybe a (readMaybe str))
 #endif
 
 forever action = action >>= \_ -> forever action
@@ -69,24 +69,24 @@ forever :: (Monad m) => m a -> m b
 echo :: IO b
 echo = forever (getLine >>= putStrLn)
 
-replicateM_ 0 _       = return ()
-replicateM_ n action  = action >>= \_ -> replicateM_ (n-1) action
+replicateM_ 0 _      = return ()
+replicateM_ n action = action >>= \_ -> replicateM_ (n-1) action
 
 echoN :: Int -> IO ()
 echoN n = replicateM_ n (getLine >>= putStrLn)
 
-for from to action  =  if from <= to
-                       then do  action from
-                                for (from+1) to action
-                       else return ()
+for from to action = if from <= to
+                     then do action from
+                             for (from+1) to action
+                     else return ()
 
 countdown :: Int -> IO ()
 countdown n = for (-n) 0 (\i -> print (-i))
 
-while cond action = do  b <- cond
-                        if b  then do  action
-                                       while cond action
-                              else return ()
+while cond action = do b <- cond
+                       if b then do action
+                                    while cond action
+                            else return ()
 #endif
 
 my_bind :: (Monad m) => m a -> (a -> m b) -> m b

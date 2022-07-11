@@ -5,9 +5,9 @@ import Test.QuickCheck (quickCheckAll)
 data Tree = Leaf Int | Branch Tree Tree
   deriving (Eq, Show)
 
-sumTree      :: Tree -> Int
-productTree  :: Tree -> Int
-incTree      :: Tree -> Tree
+sumTree     :: Tree -> Int
+productTree :: Tree -> Int
+incTree     :: Tree -> Tree
 
 prop_sum     = sumTree     (Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2)))
                ==          10

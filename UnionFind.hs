@@ -18,15 +18,15 @@ testState = M.fromList [ (Key 100, Root 0 "A")
                        , (Key 105, Root 0 "F") ]
 
 testState' :: State
-testState'  = M.fromList [ (Key 100, Root 0 "A")
-                         , (Key 101, Link (Key 104))
-                         , (Key 102, Link (Key 104))
-                         , (Key 103, Link (Key 102))
-                         , (Key 104, Root 2 "E")
-                         , (Key 105, Link (Key 108))
-                         , (Key 106, Link (Key 108))
-                         , (Key 107, Link (Key 106))
-                         , (Key 108, Root 2 "I") ]
+testState' = M.fromList [ (Key 100, Root 0 "A")
+                        , (Key 101, Link (Key 104))
+                        , (Key 102, Link (Key 104))
+                        , (Key 103, Link (Key 102))
+                        , (Key 104, Root 2 "E")
+                        , (Key 105, Link (Key 108))
+                        , (Key 106, Link (Key 108))
+                        , (Key 107, Link (Key 106))
+                        , (Key 108, Root 2 "I") ]
 
 fresh :: Info -> State -> (Key, State)
 prop_fresh0 = fresh "A" M.empty   == (Key 100, M.fromList [(Key 100, Root 0 "A")])
@@ -69,22 +69,22 @@ prop_unionEI = and [ elem (union k1' k2' testState')
                    , (k1',k2') <- [(k1, k2), (k2, k1)] ]
 
 #ifdef SOLUTION
-fresh i s =  let k = case M.lookupMax s of
-                       Nothing          -> Key 100
-                       Just (Key k, _)  -> Key (k+1)
-             in (k, M.insert k (Root 0 i) s)
+fresh i s = let k = case M.lookupMax s of
+                      Nothing         -> Key 100
+                      Just (Key k, _) -> Key (k+1)
+            in (k, M.insert k (Root 0 i) s)
 
-find k s =  case s M.! k of
-              Root r i  ->  (k, r, i, s)
-              Link p    ->  let  (root, r, i, s') = find p s
-                            in   (root, r, i, M.insert k (Link root) s')
+find k s = case s M.! k of
+             Root r i -> (k, r, i, s)
+             Link p   -> let (root, r, i, s') = find p s
+                         in  (root, r, i, M.insert k (Link root) s')
 
-union k1 k2 s =  let  (k1', r1, _,  s')   = find k1 s
-                      (k2', r2, i,  s'')  = find k2 s'
-                 in    if k1' == k2' then s''
-                 else  if r1 < r2  then  M.insert k1' (Link k2') s''
-                 else  if r1 > r2  then  M.insert k2' (Link k1') s''
-                                   else  M.insert k1' (Link k2') (M.insert k2' (Root (r2+1) i) s'')
+union k1 k2 s = let (k1', r1, _, s')  = find k1 s
+                    (k2', r2, i, s'') = find k2 s'
+                in   if k1' == k2' then s''
+                else if r1 < r2 then M.insert k1' (Link k2') s''
+                else if r1 > r2 then M.insert k2' (Link k1') s''
+                                else M.insert k1' (Link k2') (M.insert k2' (Root (r2+1) i) s'')
 #endif
 
 return []
