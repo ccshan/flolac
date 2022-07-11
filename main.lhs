@@ -236,18 +236,28 @@ Translating impure programs to monadic form
 \section{Combining side effects}
 
 \subsection{State and IO}
-\input{StateIO}
+\texttt{StateIO-1.hs}
+\texttt{StateIO-2.hs}
 
 \subsection{State and exception}
-\input{StateMaybe}
+\texttt{StateMaybe-1.hs}
+\texttt{StateMaybe-2.hs}
 
 \subsection{State and nondeterminism}
-\input{StateNondet}
+\texttt{StateNondet-1.hs}
+\texttt{StateNondet-2.hs}
+
 \citep{fischer-purely-jfp}
 
 \subsection{Monad transformers}
+\texttt{StateIO-3.hs}
+\texttt{StateMaybe-3.hs}
+\texttt{StateMaybe-4.hs}
 \citep{liang-interpreter}
+
 \begin{spec}
+StateT s IO                    = s -> IO (a, s)
+
 StateT s Maybe a               = s -> Maybe (a, s)
 MaybeT (State s) a             = s -> (Maybe a, s)
 StateT s (MaybeT (State t)) a  = s -> t -> (Maybe (a, s), t)

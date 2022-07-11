@@ -1,0 +1,10 @@
+prefixSumTrace [2,5,3]
+2
+7
+10
+result = [2,7,10]
+prefixWeightedSumTrace [2,5,3]
+200
+250
+3250
+result = [200,250,3250]

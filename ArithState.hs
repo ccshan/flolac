@@ -3,7 +3,8 @@
 import Test.QuickCheck (quickCheckAll)
 
 #if STEP == 1
-data Expr = Lit Int | Add Expr Expr | Mul Expr Expr | Get | Put Expr
+data Expr = Lit Int | Add Expr Expr | Mul Expr Expr
+          | Get | Put Expr
   deriving (Eq, Show)
 type State = Int
 #endif

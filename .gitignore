@@ -1,8 +1,5 @@
 /preamble.tex
 /*-[1-9].hs
-/StateIO.tex
-/StateMaybe.tex
-/StateNondet.tex
 /Diff.tex
 
 *.ptb
@@ -12,7 +9,8 @@
 *.log
 *.lot
 *.fls
-*.out
+ln.out
+main.out
 *.toc
 *.fmt
 *.fot

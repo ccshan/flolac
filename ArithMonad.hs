@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 import Test.QuickCheck (quickCheckAll)
 #if STEP == 1
-import Control.Monad
+import Control.Monad (liftM, ap)
 #endif
 
 data Expr = Lit Int | Add Expr Expr | Mul Expr Expr

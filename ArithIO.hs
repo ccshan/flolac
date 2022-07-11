@@ -13,5 +13,5 @@ eval Input       = getLine >>= \str -> return (read str)
 eval (Output e)  = eval e >>= \v -> print v >>= \() -> return v
 eval :: Expr -> IO Int
 
-main = eval (Output (Add (Lit 2) (Lit 2)))
+main = eval (Output (Add Input (Lit 2)))
 #endif
