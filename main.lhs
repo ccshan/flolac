@@ -290,7 +290,16 @@ type Dist = WriterT (Product Double) []
 
 \section{Automatic differentiation}
 \citep{krawiec-provably}
-\input{Diff}
+
+\texttt{Diff-1.hs}
+\citep{claessen-quickcheck}
+
+\texttt{Diff-2.hs}
+|randomParams >>= optimize|
+
+\texttt{Diff-3.hs}
+\texttt{Diff-4.hs}
+\texttt{Diff-5.hs}
 
 \bibliographystyle{mcbride}
 \bibliography{ccshan}

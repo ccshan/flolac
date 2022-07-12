@@ -1,6 +1,6 @@
-all: ln.pdf main.pdf Tree-1.hs Arith-1.hs Arith-2.hs TreeState-1.hs TreeState-2.hs UnionFind-1.hs ArithState-1.hs ArithState-2.hs TreeMaybe-1.hs ArithMaybe-1.hs TreeNondet-1.hs Crypta-1.hs Crypta-2.hs ArithNondet-1.hs ArithMonad-1.hs ArithMonad-2.hs ArithMonad-3.hs ArithIO-1.hs ArithDo-1.hs ArithDo-2.hs ArithDo-3.hs ArithDo-4.hs Traverse-1.hs StateIO-1.hs StateIO-2.hs StateIO-3.hs StateMaybe-1.hs StateMaybe-2.hs StateMaybe-3.hs StateMaybe-4.hs StateNondet-1.hs StateNondet-2.hs StateNondet-3.hs StateNondet-4.hs
+all: ln.pdf main.pdf Tree-1.hs Arith-1.hs Arith-2.hs TreeState-1.hs TreeState-2.hs UnionFind-1.hs ArithState-1.hs ArithState-2.hs TreeMaybe-1.hs ArithMaybe-1.hs TreeNondet-1.hs Crypta-1.hs Crypta-2.hs ArithNondet-1.hs ArithMonad-1.hs ArithMonad-2.hs ArithMonad-3.hs ArithIO-1.hs ArithDo-1.hs ArithDo-2.hs ArithDo-3.hs ArithDo-4.hs Traverse-1.hs StateIO-1.hs StateIO-2.hs StateIO-3.hs StateMaybe-1.hs StateMaybe-2.hs StateMaybe-3.hs StateMaybe-4.hs StateNondet-1.hs StateNondet-2.hs StateNondet-3.hs StateNondet-4.hs Diff-1.hs Diff-2.hs Diff-3.hs Diff-4.hs Diff-5.hs
 
-main.pdf: preamble.tex Diff.tex
+main.pdf: preamble.tex
 
 ArithIO-1.hs: ArithIO.hs ArithIO.out
 	runhaskell -cpp -DSTEP=1 -DSOLUTION $< < ArithIO.in | diff - ArithIO.out
@@ -65,6 +65,10 @@ StateNondet-4.hs: StateNondet.hs StateNondet-4.out
 %-4.hs: %.hs
 	runhaskell -cpp -DSTEP=4 -DSOLUTION $< | grep ^True$
 	cpp -traditional-cpp -P -DSTEP=4 $< -o - | perl -00 -pe '' > $@
+
+%-5.hs: %.hs
+	runhaskell -cpp -DSTEP=5 -DSOLUTION $< | grep ^True$
+	cpp -traditional-cpp -P -DSTEP=5 $< -o - | perl -00 -pe '' > $@
 
 %.tex: %.lhs preamble.lhs
 	runhaskell $<

@@ -92,21 +92,21 @@ instance Monad M where
 #endif
 #endif
 
-get    :: M Int
-put    :: Int -> M ()
-amb    :: [M a] -> M a
+get :: M Int
+put :: Int -> M ()
+amb :: [M a] -> M a
 
 #ifdef SOLUTION
 #if STEP == 1
-get        = M (\s -> [(s, s)])
-put s      = M (\_ -> [((), s)])
-amb ms     = M (\s -> concatMap (\m -> runM m s) ms)
+get    = M (\s -> [(s, s)])
+put s  = M (\_ -> [((), s)])
+amb ms = M (\s -> concatMap (\m -> runM m s) ms)
 #endif
 #if STEP == 2
-get        = M (\s -> ([s], s))
-put s      = M (\_ -> ([()], s))
-amb ms     = M (runState (do ass <- traverse (\m -> state (runM m)) ms
-                             return (concat ass)))
+get    = M (\s -> ([s], s))
+put s  = M (\_ -> ([()], s))
+amb ms = M (runState (do ass <- traverse (\m -> state (runM m)) ms
+                         return (concat ass)))
 #endif
 #endif
 #endif
@@ -117,7 +117,7 @@ type M = StateT Int []
 runM :: M a -> Int -> [(a, Int)]
 runM = runStateT
 
-amb        :: [M a] -> M a
+amb :: [M a] -> M a
 amb []     =
 #ifdef SOLUTION
              empty
@@ -135,7 +135,7 @@ type M = ListT (State Int)
 runM :: M a -> Int -> ([a], Int)
 runM = runState . runListT
 
-amb        :: [M a] -> M a
+amb :: [M a] -> M a
 amb []     =
 #ifdef SOLUTION
              empty
