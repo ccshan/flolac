@@ -10,23 +10,25 @@ type    Rank  = Int
 data    Node  = Root Rank Info | Link Key deriving (Eq, Show)
 
 testState :: State
-testState = M.fromList [ (Key 100, Root 0 "A")
-                       , (Key 101, Link (Key 104))
-                       , (Key 102, Root 1 "C")
-                       , (Key 103, Link (Key 102))
-                       , (Key 104, Root 1 "E")
-                       , (Key 105, Root 0 "F") ]
+testState = M.fromList
+  [ (Key 100, Root 0 "A")
+  , (Key 101, Link (Key 104))
+  , (Key 102, Root 1 "C")
+  , (Key 103, Link (Key 102))
+  , (Key 104, Root 1 "E")
+  , (Key 105, Root 0 "F") ]
 
 testState' :: State
-testState' = M.fromList [ (Key 100, Root 0 "A")
-                        , (Key 101, Link (Key 104))
-                        , (Key 102, Link (Key 104))
-                        , (Key 103, Link (Key 102))
-                        , (Key 104, Root 2 "E")
-                        , (Key 105, Link (Key 108))
-                        , (Key 106, Link (Key 108))
-                        , (Key 107, Link (Key 106))
-                        , (Key 108, Root 2 "I") ]
+testState' = M.fromList
+  [ (Key 100, Root 0 "A")
+  , (Key 101, Link (Key 104))
+  , (Key 102, Link (Key 104))
+  , (Key 103, Link (Key 102))
+  , (Key 104, Root 2 "E")
+  , (Key 105, Link (Key 108))
+  , (Key 106, Link (Key 108))
+  , (Key 107, Link (Key 106))
+  , (Key 108, Root 2 "I") ]
 
 fresh :: Info -> State -> (Key, State)
 prop_fresh0 = fresh "A" M.empty   == (Key 100, M.fromList [(Key 100, Root 0 "A")])

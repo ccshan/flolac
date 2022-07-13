@@ -1,10 +1,37 @@
-\documentclass[acmsmall,nonacm,timestamp]{acmart}
-\citestyle{acmauthoryear}
+\def~{\nobreakspace{}} % work around Debian bug 487974 and 534458 in texi2dvi
+\pagenumbering{arabic}
+\documentclass[aspectratio=169,professionalfonts]{beamer}
+\usetheme{metropolis}
+\geometry{papersize={400bp,225bp}}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage[libertine]{newtxmath}
+\usepackage[tt=false]{libertine}
+\setmonofont[StylisticSet=3]{inconsolata}
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont={Noto Serif CJK TC:style=Bold}]{Noto Serif CJK TC:style=Regular}
+\setCJKsansfont[BoldFont={Noto Sans CJK TC:style=Bold}]{Noto Sans CJK TC:style=Regular}
+\setCJKmonofont[BoldFont={Noto Sans Mono CJK TC:style=Bold}]{Noto Sans Mono CJK TC:style=Regular}
+\usepackage{xeCJKfntef}
 
-% newtxmath obviates and conflicts with amssymb and stmaryrd,
-% so pretend those packages are already loaded
-\expandafter\def\csname ver@@amssymb.sty\endcsname{}
-\expandafter\def\csname ver@@stmaryrd.sty\endcsname{}
+\usepackage{calc}
+\usepackage{comment}
+
+\usepackage{natbib}
+\citestyle{acmauthoryear}
+\bibliographystyle{ACM-Reference-Format}
+
+\usepackage{tikz}
+\newcommand\remember[2]{\mbox{\tikz[remember picture,baseline,trim left=default,trim right=default]\node(#1)[anchor=base,inner sep=0]{$#2$};}}
+
+% Record frame numbers as PS/PDF page labels
+\mode<presentation>
+{
+  \setbeamertemplate{sidebar left}{\ifpdf
+    \thispdfpagelabel{\insertframenumber}\else
+    \setcounter{page}{\value{framenumber}}\fi}
+}
+
 %include preamble.lhs
 \begin{comment}
 \begin{code}
@@ -15,47 +42,37 @@ main = return ()
 \renewcommand{\bind}{\mathbin{>\!\!>\mkern-6.7mu=}}
 \renewcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!<}}% suggested by Neil Mitchell
 \renewcommand{\sequ}{\mathbin{>\!\!>}}
-\arrayhs
+\renewcommand{\hscodestyle}{\linespread{1}\selectfont}
 \raggedbottom
 
-\usepackage{comment}
-\excludecomment{solution}
-
-\usepackage{tikz}
-
+\title{Monad 與副作用}
+\date{2022-08}
+\author{單中杰}
 \begin{document}
 
-\title{Monad and side effects}
-\author{Chung-chieh Shan}
-\authorsaddresses{}
 \maketitle
 
-Theme: To get what you want, say what you mean.
-So, if you want to do something, say what doing it means.
+\begin{frame}{暖身}
+純遞迴 \texttt{Tree-1.hs}
+\begin{itemize}
+    \item 型別→用途→測試→策略→定義→執行 \citep{felleisen-design}
+    \item 先盡量把 |sumTree| 跟 |productTree| 寫得相似，\\
+          然後才把它們抽象成更一般的、可重複利用的模組
+\end{itemize}
+解譯器 \texttt{Arith-1.hs}
+\begin{itemize}
+    \item 隨機測試、property-based testing \citep{claessen-quickcheck}
+    \item 進階練習：定義變數 \texttt{Arith-2.hs}
+\end{itemize}
+\end{frame}
 
-\section{Warm up}
+\section{個別的副作用}
 
-\subsection{Pure recursion}
-\texttt{Tree-1.hs}
+\begin{frame}{Accumulator passing}
+基本上副作用就是一段程式除了把傳進來的引數變成傳回去的結果以外做的事情。
 
-For modular reuse, abstract from similarities over differences: |sumTree| vs |productTree|
-
-\subsection{Interpreter}
-\texttt{Arith-1.hs}
-
-Challenge: local variable binding
-\texttt{Arith-2.hs}
-
-\section{State}
-
-Certain programming tasks make us intuitively reach for side effects.
-
-Basically, a side effect is something that a piece of code does besides turning input arguments into return values.
-
-\subsection{Accumulator passing}
-
-\texttt{TreeState-1.hs}
-
+我們寫程式有時候會直觀想要使用副作用。\\
+最原始的、印象中最常想到的副作用是 state（狀態）：
 \begin{spec}
 result := 0
 sumTree (Leaf n)        =  result := result + n;
@@ -63,10 +80,11 @@ sumTree (Leaf n)        =  result := result + n;
 sumTree (Branch t1 t2)  =  sumTree t1;
                            sumTree t2
 \end{spec}
+\texttt{TreeState-1.hs}
+用 |sumTree'| 定義 |sumTree|
+\end{frame}
 
-\subsection{State threading}
-
-\texttt{TreeState-2.hs}
+\begin{frame}{State threading}
 
 \begin{spec}
 next := 0
@@ -74,102 +92,142 @@ relabel (Leaf _)        =  next := next + 1;
                            Leaf next
 relabel (Branch t1 t2)  =  Branch (relabel t1) (relabel t2)
 \end{spec}
-
+\texttt{TreeState-2.hs}
+用 |relabel'| 定義 |relabel|
 \begin{spec}
 seen := S.empty
 unique (Leaf n)        =  if S.member n seen then False
                           else seen := S.insert n seen; True
 unique (Branch t1 t2)  =  unique t1 && unique t2
 \end{spec}
+用 |unique'| 定義 |unique|
+（其實也可以用 |unique''| 定義 |unique|，那是比較不副作用、比較能平行化的作法）
+\end{frame}
 
+\begin{frame}[standout]
 \noindent\includegraphics[width=\textwidth]{say-it}
+把心目中的願望講出來，以便實現。所以如果心目中要的是副作用的話，就把副作用的\CJKunderline{意義}講出來。
+\end{frame}
 
-\subsection{Local vs global state}
+\begin{frame}{Local vs global state}
 \texttt{UnionFind-1.hs}
+\hfill Pointers, references, file system
 
-\noindent
-\begin{minipage}[t]{22em}
+\begin{tikzpicture}[>=stealth, trim left=-\mathindent,
+                    code/.style={anchor=north west, align=left, inner sep=0}]
+    \node (testState) at (0,4cm) [code] {$\mathhs\hscodestyle
 \begin{spec}
 testState :: State
-testState = M.fromList  [  (Key 100, Root 0 "A")
-                        ,  (Key 101, Link (Key 104))
-                        ,  (Key 102, Root 1 "C")
-                        ,  (Key 103, Link (Key 102))
-                        ,  (Key 104, Root 1 "E")
-                        ,  (Key 105, Root 0 "F")  ]
+testState = M.fromList
+  [  (Key 100, Root 0 "A")
+  ,  (Key 101, Link (Key 104))
+  ,  (Key 102, Root 1 "C")
+  ,  (Key 103, Link (Key 102))
+  ,  (Key 104, Root 1 "E")
+  ,  (Key 105, Root 0 "F")  ]
 \end{spec}
-\end{minipage}
-\begin{tikzpicture}[>=stealth,baseline=2cm]
-    \node (100) at (0,1) {100};
-    \node (101) at (1,0) {101};
-    \node (102) at (2,1) {102};
-    \node (103) at (2,0) {103};
-    \node (104) at (1,1) {104};
-    \node (105) at (3,1) {105};
-    \draw [->] (101) -- (104);
-    \draw [->] (103) -- (102);
-    \draw (-.7,-.5) rectangle (3.7,1.5);
-\end{tikzpicture}
+    $};
+    \begin{scope}[xshift=15em,yshift=2.5cm]
+	\node (100) at (0,1) {100};
+	\node (101) at (1,0) {101};
+	\node (102) at (2,1) {102};
+	\node (103) at (2,0) {103};
+	\node (104) at (1,1) {104};
+	\node (105) at (3,1) {105};
+	\draw [->] (101) -- (104);
+	\draw [->] (103) -- (102);
+	\draw (-.7,-.5) rectangle (3.7,1.5);
+    \end{scope}
+    \onslide<1>{\path (testState.south west) ++(0,-\abovedisplayskip) node [code] {$\mathhs\hscodestyle
+\begin{spec}
+fresh  :: Info -> Key
 
-\noindent
-\begin{minipage}[t]{22em}
+find   :: Key -> (Key, Rank, Info)
+
+union  :: Key -> Key -> ()
+\end{spec}
+    $};}
+    \onslide<2>{\path (testState.south west) ++(0,-\abovedisplayskip) node [code] {$\mathhs\hscodestyle
+\begin{spec}
+fresh  :: Info -> State -> (Key, State)
+
+find   :: Key -> State -> (Key, Rank, Info, State)
+
+union  :: Key -> Key -> State -> State
+\end{spec}
+    $};}
+    \onslide<3->{\node at (0,3.5cm) [code, fill=white] {$\mathhs\hscodestyle
 \begin{spec}
 testState' :: State
-testState'  = M.fromList   [  (Key 100, Root 0 "A")
-                           ,  (Key 101, Link (Key 104))
-                           ,  (Key 102, Link (Key 104))
-                           ,  (Key 103, Link (Key 102))
-                           ,  (Key 104, Root 2 "E")
-                           ,  (Key 105, Link (Key 108))
-                           ,  (Key 106, Link (Key 108))
-                           ,  (Key 107, Link (Key 106))
-                           ,  (Key 108, Root 2 "I")  ]
+testState'  = M.fromList
+  [  (Key 100, Root 0 "A")
+  ,  (Key 101, Link (Key 104))
+  ,  (Key 102, Link (Key 104))
+  ,  (Key 103, Link (Key 102))
+  ,  (Key 104, Root 2 "E")
+  ,  (Key 105, Link (Key 108))
+  ,  (Key 106, Link (Key 108))
+  ,  (Key 107, Link (Key 106))
+  ,  (Key 108, Root 2 "I")  ]
 \end{spec}
-\end{minipage}
-\begin{tikzpicture}[>=stealth,baseline=2cm]
-    \node (100) at (0,1) {100};
-    \node (101) at (1,0) {101};
-    \node (102) at (2,1) {102};
-    \node (103) at (2,0) {103};
-    \node (104) at (1,1) {104};
-    \node (105) at (3,0) {105};
-    \node (106) at (4,1) {106};
-    \node (107) at (4,0) {107};
-    \node (108) at (3,1) {108};
-    \draw [->] (101) -- (104);
-    \draw [->] (102) -- (104);
-    \draw [->] (103) -- (102);
-    \draw [->] (105) -- (108);
-    \draw [->] (106) -- (108);
-    \draw [->] (107) -- (106);
-    \draw (-.7,-.5) rectangle (4.7,1.5);
+    $};
+    \begin{scope}[xshift=15em]
+	\node (100) at (0,1) {100};
+	\node (101) at (1,0) {101};
+	\node (102) at (2,1) {102};
+	\node (103) at (2,0) {103};
+	\node (104) at (1,1) {104};
+	\node (105) at (3,0) {105};
+	\node (106) at (4,1) {106};
+	\node (107) at (4,0) {107};
+	\node (108) at (3,1) {108};
+	\draw [->] (101) -- (104);
+	\draw [->] (102) -- (104);
+	\draw [->] (103) -- (102);
+	\draw [->] (105) -- (108);
+	\draw [->] (106) -- (108);
+	\draw [->] (107) -- (106);
+	\draw (-.7,-.5) rectangle (4.7,1.5);
+    \end{scope}}
 \end{tikzpicture}
+\end{frame}
 
-Pointers, references, file system
-
-\subsection{Interpreter}
+\begin{frame}{Interpreter}
 \texttt{ArithState-1.hs}
 
-Challenge: Memory allocation
-\texttt{ArithState-2.hs}
+進階練習：調撥記憶體 \texttt{ArithState-2.hs}
 \begin{spec}
 data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
            |  New Expr | Get Expr | Put Expr Expr
+
 type State = [Int]
 \end{spec}
-How can this be useful?
+這怎麼會有用？
+\end{frame}
 
-\section{Exception}
-
-\subsection{Tree}
+\begin{frame}{Exception (|Maybe|)}
+把中途跳脫的意義講出來
+\begin{spec}
+data Maybe a = Nothing | Just a
+\end{spec}
 \texttt{TreeMaybe-1.hs}
-
-\subsection{Interpreter}
+\begin{itemize}
+    \item |decTree| 碰到非正數是錯誤
+    \item |productTree| 碰到零有捷徑
+\end{itemize}
 \texttt{ArithMaybe-1.hs}
+\begin{itemize}
+    \item 除以零是錯誤
+\end{itemize}
+正常狀況下產生的|Just|需要``threading''
+\end{frame}
 
-\section{Nondeterminism}
-
-\subsection{Tree}
+\begin{frame}{二十一點}
+每個數字遇到時都可以選擇要或是不要，但是一旦超過21就爆掉。\\
+最後得分有哪些可能？
+\begin{center}
+    $11$, $-1$, $11$\quad→\quad$\{-1,0,10,11,21\}$
+\end{center}
 \texttt{TreeNondet-1.hs}
 \begin{spec}
 blackjack' :: Tree -> Int -> [Int]
@@ -177,6 +235,29 @@ blackjack' (Leaf n)        total  =  if total + n > 21 then total
                                      else amb [total, total + n]
 blackjack' (Branch t1 t2)  total  =  blackjack' t2 (blackjack' t1 total)
 \end{spec}
+用 |blackjack'| 定義 |blackjack|
+\end{frame}
+
+\begin{frame}[standout]
+\noindent\includegraphics[width=\textwidth]{eeaao}
+Nondeterminism
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+\renewcommand\bibsection{}
+\small
+\bibliography{ccshan}
+\end{frame}
+
+\end{document}
+
+
+
+
+
+
+
+\section{Nondeterminism}
 
 \subsection{SEND + MORE = MONEY}
 \texttt{Crypta-1.hs}
@@ -300,8 +381,3 @@ type Dist = WriterT (Product Double) []
 \texttt{Diff-3.hs}
 \texttt{Diff-4.hs}
 \texttt{Diff-5.hs}
-
-\bibliographystyle{mcbride}
-\bibliography{ccshan}
-
-\end{document}
