@@ -6,8 +6,13 @@ data Tree = Leaf Int | Branch Tree Tree
   deriving (Eq, Show)
 
 sumTree     :: Tree -> Int
+-- ^Add together all the numbers in the given tree
+
 productTree :: Tree -> Int
+-- ^Multiply together all the numbers in the given tree
+
 incTree     :: Tree -> Tree
+-- ^Increment each number in the given tree by 1
 
 prop_sum     = sumTree     (Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2)))
                ==          10

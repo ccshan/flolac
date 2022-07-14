@@ -6,6 +6,8 @@ data Tree = Leaf Int | Branch Tree Tree
   deriving (Eq, Show)
 
 decTree :: Tree -> Maybe Tree
+-- ^Decrement each number in the given tree by 1
+-- But if a number is nonpositive, signal error by returning `Nothing`
 prop_dec1 = decTree (Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2)))
             == Just (Branch (Leaf 2) (Branch (Leaf 4) (Leaf 1)))
 prop_dec2 = decTree (Branch (Leaf 1) (Branch (Leaf 3) (Leaf 0)))
@@ -21,6 +23,8 @@ decTree (Branch t1 t2) = case decTree t1 of
 #endif
 
 productTree :: Tree -> Int
+-- ^Multiply together all the numbers in the given tree
+-- But if a number is zero, return zero immediately
 prop_product  = productTree (Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2)))
                 ==          30
 prop_product0 = productTree (Branch (Branch (Leaf 3) (Leaf 0)) undefined)

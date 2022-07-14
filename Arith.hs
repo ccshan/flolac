@@ -22,6 +22,7 @@ type Name = String
 #endif
 
 eval :: Expr -> Int
+-- ^Compute the result value of the given expression
 prop_eval1     = eval (Add (Lit 2) (Lit 3)) == 5
 prop_eval2     = eval (Mul (Add (Lit 1) (Lit 1)) (Lit 3)) == 6
 prop_evalLit v = eval (Lit v) == v
@@ -40,6 +41,7 @@ prop_evalLet3  = eval (Let "x" (Add (Lit 1) (Lit 1))
 eval e = eval' e M.empty
 
 eval' :: Expr -> M.Map Name Int -> Int
+-- ^Compute the result value of the given expression in the given environment
 #endif
 
 #ifdef SOLUTION

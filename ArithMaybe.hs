@@ -7,6 +7,8 @@ data Expr = Lit Int | Add Expr Expr | Mul Expr Expr | Div Expr Expr
 type State = Int
 
 eval :: Expr -> Maybe Int
+-- ^Compute the result value of the given expression
+-- But if division by zero, signal error by returning `Nothing`
 prop_eval1     = eval (Add (Lit 2) (Lit 3))                                == Just 5
 prop_eval2     = eval (Mul (Add (Lit 1) (Lit 1)) (Lit 3))                  == Just 6
 prop_evalLit v = eval (Lit v)                                              == Just v

@@ -31,10 +31,12 @@ testState' = M.fromList
   , (Key 108, Root 2 "I") ]
 
 fresh :: Info -> State -> (Key, State)
+-- ^Add a new set containing only the new element
 prop_fresh0 = fresh "A" M.empty   == (Key 100, M.fromList [(Key 100, Root 0 "A")])
 prop_fresh6 = fresh "G" testState == (Key 106, M.insert (Key 106) (Root 0 "G") testState)
 
 find :: Key -> State -> (Key, Rank, Info, State)
+-- ^Find the representative of the set containing the given element
 prop_findA = find (Key 100) testState  == (Key 100, 0, "A", testState)
 prop_findE = and  [ find k testState   == (Key 104, 1, "E", testState) | k <- [Key 101, Key 104] ]
 prop_findC = and  [ find k testState   == (Key 102, 1, "C", testState) | k <- [Key 102, Key 103] ]
@@ -43,6 +45,7 @@ prop_find' = find (Key 103) testState' == (Key 104, 2, "E", M.insert (Key 103) (
                                                                      testState')
 
 union :: Key -> Key -> State -> State
+-- ^Merge the two sets containing the two given elements
 prop_unionC  = and [ union k1' k2' testState == M.insert k1 (Link (Key 102)) testState
                    | k1        <- [Key 100, Key 105]
                    , k2        <- [Key 102, Key 103]

@@ -16,6 +16,8 @@ type State = [Int]
 #endif
 
 eval :: Expr -> State -> (Int, State)
+-- ^Compute the result value of the given expression
+-- /State/: `s` and the `State` returned are the current memory contents
 prop_eval1      s = eval (Add (Lit 2) (Lit 3))               s  == (5, s)
 prop_eval2      s = eval (Mul (Add (Lit 1) (Lit 1)) (Lit 3)) s  == (6, s)
 prop_evalLit v  s = eval (Lit v)                             s  == (v, s)
