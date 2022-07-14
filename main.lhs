@@ -33,6 +33,8 @@
 }
 
 %include preamble.lhs
+%format square x = x "^2"
+%format ... = "\dots"
 \begin{comment}
 \begin{code}
 main = return ()
@@ -55,7 +57,7 @@ main = return ()
 \begin{frame}{暖身}
 純遞迴 \texttt{Tree-1.hs}
 \begin{itemize}
-    \item 型別→用途→測試→策略→定義→執行 \citep{felleisen-design}
+    \item 型別→用途→範例→策略→定義→測試 \citep{felleisen-design}
     \item 先盡量把 |sumTree| 跟 |productTree| 寫得相似，\\
           然後才把它們抽象成更一般的、可重複利用的模組
 \end{itemize}
@@ -128,15 +130,15 @@ testState = M.fromList
 \end{spec}
     $};
     \begin{scope}[xshift=15em,yshift=2.5cm]
-	\node (100) at (0,1) {100};
-	\node (101) at (1,0) {101};
-	\node (102) at (2,1) {102};
-	\node (103) at (2,0) {103};
-	\node (104) at (1,1) {104};
-	\node (105) at (3,1) {105};
-	\draw [->] (101) -- (104);
-	\draw [->] (103) -- (102);
-	\draw (-.7,-.5) rectangle (3.7,1.5);
+        \node (100) at (0,1) {100};
+        \node (101) at (1,0) {101};
+        \node (102) at (2,1) {102};
+        \node (103) at (2,0) {103};
+        \node (104) at (1,1) {104};
+        \node (105) at (3,1) {105};
+        \draw [->] (101) -- (104);
+        \draw [->] (103) -- (102);
+        \draw (-.7,-.5) rectangle (3.7,1.5);
     \end{scope}
     \onslide<1>{\path (testState.south west) ++(0,-\abovedisplayskip) node [code] {$\mathhs\hscodestyle
 \begin{spec}
@@ -172,22 +174,22 @@ testState'  = M.fromList
 \end{spec}
     $};
     \begin{scope}[xshift=15em]
-	\node (100) at (0,1) {100};
-	\node (101) at (1,0) {101};
-	\node (102) at (2,1) {102};
-	\node (103) at (2,0) {103};
-	\node (104) at (1,1) {104};
-	\node (105) at (3,0) {105};
-	\node (106) at (4,1) {106};
-	\node (107) at (4,0) {107};
-	\node (108) at (3,1) {108};
-	\draw [->] (101) -- (104);
-	\draw [->] (102) -- (104);
-	\draw [->] (103) -- (102);
-	\draw [->] (105) -- (108);
-	\draw [->] (106) -- (108);
-	\draw [->] (107) -- (106);
-	\draw (-.7,-.5) rectangle (4.7,1.5);
+        \node (100) at (0,1) {100};
+        \node (101) at (1,0) {101};
+        \node (102) at (2,1) {102};
+        \node (103) at (2,0) {103};
+        \node (104) at (1,1) {104};
+        \node (105) at (3,0) {105};
+        \node (106) at (4,1) {106};
+        \node (107) at (4,0) {107};
+        \node (108) at (3,1) {108};
+        \draw [->] (101) -- (104);
+        \draw [->] (102) -- (104);
+        \draw [->] (103) -- (102);
+        \draw [->] (105) -- (108);
+        \draw [->] (106) -- (108);
+        \draw [->] (107) -- (106);
+        \draw (-.7,-.5) rectangle (4.7,1.5);
     \end{scope}}
 \end{tikzpicture}
 \end{frame}
@@ -208,7 +210,9 @@ type State = [Int]
 \begin{frame}{Exception (|Maybe|)}
 把中途跳脫的意義講出來
 \begin{spec}
-data Maybe a = Nothing | Just a
+data Maybe     a = Nothing  | Just   a
+
+data Either b  a = Left b   | Right  a
 \end{spec}
 \texttt{TreeMaybe-1.hs}
 \begin{itemize}
@@ -219,15 +223,15 @@ data Maybe a = Nothing | Just a
 \begin{itemize}
     \item 除以零是錯誤
 \end{itemize}
-正常狀況下產生的|Just|需要``threading''
+正常產生的|Just|需要``threading''
 \end{frame}
 
 \begin{frame}{二十一點}
 每個數字遇到時都可以選擇要或是不要，但是一旦超過21就爆掉。\\
 最後得分有哪些可能？
-\begin{center}
-    $11$, $-1$, $11$\quad→\quad$\{-1,0,10,11,21\}$
-\end{center}
+\[
+    11, -1, 11\quad\rightarrow\quad\{-1,0,10,11,21\}
+\]
 \texttt{TreeNondet-1.hs}
 \begin{spec}
 blackjack' :: Tree -> Int -> [Int]
@@ -236,11 +240,79 @@ blackjack' (Leaf n)        total  =  if total + n > 21 then total
 blackjack' (Branch t1 t2)  total  =  blackjack' t2 (blackjack' t1 total)
 \end{spec}
 用 |blackjack'| 定義 |blackjack|
+\begin{spec}
+concatMap :: (a -> [b]) -> [a] -> [b]
+concatMap f as = concat (map f as)
+\end{spec}
 \end{frame}
 
 \begin{frame}[standout]
 \noindent\includegraphics[width=\textwidth]{eeaao}
 Nondeterminism
+\end{frame}
+
+\begin{frame}{覆面算}
+\mathindent=0pt
+\begin{center}
+    \ttfamily\hscodestyle
+    \begin{tabular}{r>{\hspace*{4pc}}rr>{\hspace*{4pc}}rr}
+           X\textsuperscript{2} &&    SEND &&    TO \\
+        +\;Y\textsuperscript{2} && +\;MORE && +\;GO \\
+        \cline{1-1} \cline{3-3} \cline{5-5} \vrule width0pt height2.5ex
+           Z\textsuperscript{2} &&   MONEY &&   OUT
+    \end{tabular}
+\end{center}
+\begin{overprint}
+\onslide<1>
+\begin{spec}
+concatMap :: (a -> [b]) -> [a] -> [b]
+
+concatMap  (\x -> concatMap  (\y -> concatMap  (\z ->  if square x + square y == square z
+                                                       then [(x,y,z)]
+                                                       else [])
+                                               [0..9])
+                             [0..9])
+           [0..9]
+\end{spec}
+\onslide<2>
+\begin{spec}
+type Digit = Int
+digit :: (Digit -> [Answer]) -> Answer
+
+digit (\x -> digit (\y -> digit (\z ->  if square x + square y == square z
+                                        then [(x,y,z)]
+                                        else [])))
+\end{spec}
+可以把每一個 loop body 想成一個 |Digit| 的 continuation
+\onslide<3>
+\begin{spec}
+concatMap  (\d -> concatMap  (\e -> concatMap  (\y ->  if mod (d + e) 10 == y
+                                                       then ...
+                                                       else [])
+                                               ([0..9] \\ [d,e]))
+                             ([0..9] \\ [d]))
+           [0..9]
+\end{spec}
+趁早檢查，免得做白工
+\onslide<4>
+\begin{spec}
+type Chosen = [Digit]
+digit :: (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
+
+digit (\d -> digit (\e -> digit (\y ->  if mod (d + e) 10 == y
+                                        then ...
+                                        else \chosen -> [])))
+\end{spec}
+\texttt{Crypta-1.hs}
+\onslide<5>
+\begin{spec}
+type Chosen = [(Char,Digit)]
+digit :: Char -> (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
+
+add 'D' 'E' 'Y' ...
+\end{spec}
+\texttt{Crypta-2.hs} 適合自資料檔讀取新題
+\end{overprint}
 \end{frame}
 
 \begin{frame}[allowframebreaks]{References}
@@ -256,21 +328,6 @@ Nondeterminism
 
 
 
-
-\section{Nondeterminism}
-
-\subsection{SEND + MORE = MONEY}
-\texttt{Crypta-1.hs}
-
-Loop bodies are continuation functions.
-
-Prepone checking to avoid futile generation.
-
-\texttt{Crypta-2.hs}
-
-Use state to remember letters whose digits have been chosen.
-
-Generalize to TO + GO = OUT.
 
 \subsection{Interpreter}
 \texttt{ArithNondet-1.hs}
