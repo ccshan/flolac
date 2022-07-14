@@ -9,9 +9,9 @@
 \usepackage[tt=false]{libertine}
 \setmonofont[StylisticSet=3]{inconsolata}
 \usepackage{xeCJK}
-\setCJKmainfont[BoldFont={Noto Serif CJK TC:style=Bold}]{Noto Serif CJK TC:style=Regular}
-\setCJKsansfont[BoldFont={Noto Sans CJK TC:style=Bold}]{Noto Sans CJK TC:style=Regular}
-\setCJKmonofont[BoldFont={Noto Sans Mono CJK TC:style=Bold}]{Noto Sans Mono CJK TC:style=Regular}
+\setCJKmainfont[BoldFont={Noto Serif CJK TC Bold}]{Noto Serif CJK TC}
+\setCJKsansfont[BoldFont={Noto Sans CJK TC Bold}]{Noto Sans CJK TC}
+\setCJKmonofont[BoldFont={Noto Sans Mono CJK TC Bold}]{Noto Sans Mono CJK TC}
 \usepackage{xeCJKfntef}
 
 \usepackage{calc}
@@ -194,7 +194,7 @@ testState'  = M.fromList
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Interpreter}
+\begin{frame}{State-threading interpreter}
 \texttt{ArithState-1.hs}
 
 進階練習：調撥記憶體 \texttt{ArithState-2.hs}
@@ -283,7 +283,8 @@ digit (\x -> digit (\y -> digit (\z ->  if square x + square y == square z
                                         then [(x,y,z)]
                                         else [])))
 \end{spec}
-可以把每一個 loop body 想成一個 |Digit| 的 continuation
+可以把每一個 loop body 想成一個 |Digit| 的 continuation\\
+所以「|digit (\x ->|」好像一個命令
 \onslide<3>
 \begin{spec}
 concatMap  (\d -> concatMap  (\e -> concatMap  (\y ->  if mod (d + e) 10 == y
@@ -315,9 +316,17 @@ add 'D' 'E' 'Y' ...
 \end{overprint}
 \end{frame}
 
+\begin{frame}{Nondeterministic interpreter}
+\texttt{ArithNondet-1.hs}
+\begin{spec}
+data Expr = ... | Amb Expr Expr
+\end{spec}
+\citep{mccarthy-basis}
+\end{frame}
+
 \begin{frame}[allowframebreaks]{References}
 \renewcommand\bibsection{}
-\small
+\renewcommand\bibfont{\hscodestyle\footnotesize}
 \bibliography{ccshan}
 \end{frame}
 
@@ -325,12 +334,6 @@ add 'D' 'E' 'Y' ...
 
 
 
-
-
-
-
-\subsection{Interpreter}
-\texttt{ArithNondet-1.hs}
 
 \section{Monads}
 

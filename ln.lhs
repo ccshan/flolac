@@ -2,7 +2,10 @@
 \geometry{a4paper,margin=3pc,includeheadfoot}
 \citestyle{acmauthoryear}
 
-\usepackage[T1]{CJKutf8}
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont={Noto Serif CJK TC Bold}]{Noto Serif CJK TC}
+\setCJKsansfont[BoldFont={Noto Sans CJK TC Bold}]{Noto Sans CJK TC}
+\setCJKmonofont[BoldFont={Noto Sans Mono CJK TC Bold}]{Noto Sans Mono CJK TC}
 
 % newtxmath obviates and conflicts with amssymb and stmaryrd,
 % so pretend those packages are already loaded
@@ -40,8 +43,6 @@ main = return ()
 \begin{document}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\begin{CJK}{UTF8}{bsmi}
-\CJKnospace
 
 \title{Monad and side effects}
 \author{單中杰}
@@ -465,5 +466,4 @@ runDelta . eval4 e     :: M.Map Name (Double, Delta)   -> (Double, Delta)
 \bibliography{ccshan}
 
 \clearpage
-\end{CJK}
 \end{document}

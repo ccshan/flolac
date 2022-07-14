@@ -6,6 +6,7 @@ data Expr = Lit Int | Add Expr Expr | Mul Expr Expr | Amb Expr Expr
   deriving (Eq, Show)
 
 eval :: Expr -> [Int]
+-- ^Compute the possible result values of the given expression
 prop_eval1     = eval (Add (Lit 2) (Lit 3))                             == [5]
 prop_eval2     = eval (Mul (Add (Lit 1) (Lit 1)) (Lit 3))               == [6]
 prop_evalLit v = eval (Lit v)                                           == [v]
