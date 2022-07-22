@@ -31,7 +31,8 @@ prop_evalState6   = eval (Add (Put (Add Get (Lit 1))) Get)   50 == (102, 51)
 prop_evalPutGet s = eval (Put Get)                           s  == eval Get s
 #endif
 #if STEP == 2
-prop_evalNew      = eval (New (New (Lit 100)))               [] == (1, [100,0])
+prop_evalNew1     = eval (New (New (Lit 100)))               [] == (1, [100,0])
+prop_evalNew2     = eval (New (New (Add (Lit 50) (Lit 50)))) [] == (1, [100,0])
 prop_evalGet      = eval (Add (Lit 1) (Get (New (Lit 100)))) [] == (101, [100])
 prop_evalPut      = eval (Put (New (Lit 10)) (New (Lit 20))) [] == (1, [1,20])
 #endif

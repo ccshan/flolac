@@ -73,8 +73,7 @@ main = return ()
 \begin{frame}{Accumulator passing}
 基本上副作用就是一段程式除了把傳進來的引數變成傳回去的結果以外做的事情。
 
-我們寫程式有時候會直觀想要使用副作用。\\
-最原始的、印象中最常想到的副作用是 state（狀態）：
+我們寫程式有時候會直觀想用副作用。印象最原始的是 state（狀態）：
 \begin{spec}
 result := 0
 sumTree (Leaf n)        =  result := result + n;
@@ -82,6 +81,9 @@ sumTree (Leaf n)        =  result := result + n;
 sumTree (Branch t1 t2)  =  sumTree t1;
                            sumTree t2
 \end{spec}
+如此處理 |Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2))| 的方法是 |((0+3)+5)+2|\onslide<1>{ 還是 |3+(5+(2+0))| 還是 |3+(5+2)|？}
+
+\pause
 \texttt{TreeState-1.hs}
 用 |sumTree'| 定義 |sumTree|
 \end{frame}
@@ -198,11 +200,20 @@ testState'  = M.fromList
 \texttt{ArithState-1.hs}
 
 進階練習：調撥記憶體 \texttt{ArithState-2.hs}
+\mathindent=0pt
 \begin{spec}
 data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
-           |  New Expr | Get Expr | Put Expr Expr
 
-type State = [Int]
+           |  New Expr       -- \text{把|Expr|的結果存到一個新allocate的}
+                             -- \text{memory cell, 傳回該cell的address}
+
+           |  Get Expr       -- \text{把|Expr|的結果當作一個address,}
+                             -- \text{傳回該cell目前的內容}
+
+           |  Put Expr Expr  -- \text{把第一個|Expr|的結果當作一個address,}
+                             -- \text{存入第二個|Expr|的結果並傳回}
+
+type State = [Int]           -- \text{記憶體內容}
 \end{spec}
 這怎麼會有用？
 \end{frame}
