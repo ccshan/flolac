@@ -48,6 +48,7 @@
 %format s2
 %format s3
 %format (alert3 (content)) = "\alert<3>{" content "}"
+%format ~> = "\mathinner\rightarrow"
 %format (CASES (a) (b) (c)) = "\left\{\begin{matrix}" a "\cr\relax" b "\cr\relax" c "\end{matrix}\right."
 \begin{comment}
 \begin{code}
@@ -525,7 +526,7 @@ map f = concatMap (return . f ^)
         \begin{scope}[every node/.style={anchor=base west, inner sep=0, text=alerted text.fg}]
             \node at (mul state.base west) {%
 \begin{spec}
-concatMap :: (a -> State -> (b, State)) -> (State -> (a, State)) -> (State -> (b, State))
+concatMap :: (a ~> State ~> (b, State)) ~> (State ~> (a, State)) ~> (State ~> (b, State))
 concatMap f m = \s -> let (a, s1) = m s in f a s1
 concatMap f m = uncurry f . m
 \end{spec}
@@ -554,156 +555,41 @@ eval (Add e1 e2)  = concatMap  (\v1 -> concatMap  (\v2 -> return (v1+v2))
 \begin{spec}
 type M a = CASES (State -> (a, State)) (Maybe a) [a]
 
-return     :: a -> M a
-concatMap  :: (a -> M b) -> M a -> M b
+return     :: a -> M a                  -- unit, pure, eta $\eta$
+concatMap  :: (a -> M b) -> M a -> M b  -- bind, |=<<|, $\cdot^\star$
 \end{spec}
 \end{frame}
 
-\begin{comment}
-\begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
-\small
-\tabcolsep=.4em
-\vspace*{-9pt}%
-\sethscode{tophscode}
-\hspace*{-1cm}%
-\begin{tabular}{l||l||l}
-\vrule width0pt height3ex
-|eval (Lit v) =| & |eval (Add e1 e2) =| & |eval (Neg e1) =|
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|\s -> (v, s)| &
+\begin{frame}{Monad laws}
 \begin{spec}
-\s ->  let  (v1, s1)  = eval e1 s
-            (v2, s2)  = eval e2 s1
-       in   (v1 + v2, s2)
-\end{spec}
-&
-\begin{spec}
-\s ->  let  (v1, s1)  = eval e1 s
-       in   (-v1, s1)
-\end{spec}
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|Just v| &
-\begin{spec}
-case eval e1 of
-  Nothing  ->  Nothing
-  Just v1  ->  case eval e2 of
-                 Nothing  ->  Nothing
-                 Just v2  ->  Just (v1 + v2)
-\end{spec}
-&
-\begin{spec}
-case eval e1 of
-  Nothing  ->  Nothing
-  Just v1  ->  Just (-v1)
-\end{spec}
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|[v]|
-&
-\begin{spec}
-concatMap  (\v1 -> map  (\v2 -> v1+v2)
-                        (eval e2))
-           (eval e1)
-\end{spec}
-&
-\begin{spec}
-map  (\v1 -> -v1)
-     (eval e1)
-\end{spec}
-\\\noalign{\kern-2ex}&&\\
-\end{tabular}
-\end{frame}
+return  :: a -> M a
+(>>=)   :: M a -> (a -> M b) -> M b
 
-\begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
-\small
-\tabcolsep=.4em
-\vspace*{-9pt}%
-\sethscode{tophscode}
-\hspace*{-1cm}%
-\begin{tabular}{l||l||l}
-\vrule width0pt height3ex
-|eval (Lit v) =| & |eval (Mul e1 e2) =| & |eval (If e1 et ef ^) =|
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|\s -> (v, s)| &
-\begin{spec}
-\s ->  let  (v1, s1)  = eval e1 s
-            (v2, s2)  = eval e2 s1
-       in   (v1 * v2, s2)
+return a >>= k           = k a
+m >>= return             = m
+m >>= (\a -> k a >>= l)  = (m >>= k) >>= l
 \end{spec}
-&
-\begin{spec}
-\s ->  let (v1, s1)  = eval e1 s
-       in eval (if v1  then et
-                       else ef ^) s1
-\end{spec}
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|Just v| &
-\begin{spec}
-case eval e1 of
-  Nothing  ->  Nothing
-  Just v1  ->  case eval e2 of
-                 Nothing  ->  Nothing
-                 Just v2  ->  Just (v1 * v2)
-\end{spec}
-&
-\begin{spec}
-case eval e1 of
-  Nothing  ->  Nothing
-  Just v1  ->  eval (if v1  then et
-                            else ef ^)
-\end{spec}
-\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
-|[v]|
-&
-\begin{spec}
-concatMap  (\v1 -> map  (\v2 -> v1*v2)
-                        (eval e2))
-           (eval e1)
-\end{spec}
-&
-\begin{spec}
-concatMap  (\v1 -> eval (if v1  then et
-                                else ef ^))
-           (eval e1)
-\end{spec}
-\\\noalign{\kern-2ex}&&\\
-\end{tabular}
-\end{frame}
-
-\begin{frame}{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
-\mathindent=0pt
-\begin{spec}
-return :: a -> [a]
-return a = [a]
-
-concatMap :: (a -> [b]) -> [a] -> [b]
-\end{spec}
-\vskip-\belowdisplayskip
-\vskip-\abovedisplayskip
-\vskip-\parskip
+\vspace*{-\belowdisplayskip}
 \begin{overprint}
 \onslide<1>
+檢查具體特例。\hfill\texttt{Laws-1.hs}\hfill
+用|Int|以外的型別呢？|[]|以外的monad呢？
 \begin{spec}
-map :: (a -> b) -> [a] -> [b]
-map f = concatMap (return . f)
+type M a = [a]
+a  = 9                    :: Int
+k  = (\n -> [1..n])       :: Int -> M Int
+m  = [5,3]                :: M Int
+l  = (\n -> [n, n * 10])  :: Int -> M Int
 \end{spec}
 \onslide<2>
+原本的定義：
 \begin{spec}
-concatMap :: (a -> Maybe b) -> Maybe a -> Maybe b
-concatMap f Nothing   = Nothing
-concatMap f (Just a)  = f a
-
-concatMap :: (a -> s -> (b, s)) -> (s -> (a, s)) -> (s -> (b, s))
-concatMap f m = \s -> let (a, s1) = m s in f a s1
-concatMap f m = uncurry f . m
-
-eval (Lit v)      = return v
-eval (Add e1 e2)  = concatMap  (\v1 -> concatMap  (\v2 -> return (v1+v2))
-                                                  (eval e2))
-                               (eval e1)
+return  :: a -> M a
+fmap    :: (a -> b) -> M a -> M b
+join    :: M (M a) -> M a
 \end{spec}
 \end{overprint}
 \end{frame}
-\end{comment}
 
 \begin{frame}[allowframebreaks=1]{References}
 \renewcommand\bibsection{}

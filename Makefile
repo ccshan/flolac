@@ -11,6 +11,7 @@ EXERCISES = \
 	TreeNondet-1.hs \
 	Crypta-1.hs Crypta-2.hs \
 	ArithNondet-1.hs \
+	Laws-1.hs \
 	ArithMonad-1.hs ArithMonad-2.hs ArithMonad-3.hs \
 	ArithIO-1.hs \
 	ArithDo-1.hs ArithDo-2.hs ArithDo-3.hs ArithDo-4.hs \
