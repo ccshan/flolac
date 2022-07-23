@@ -1,5 +1,4 @@
 %include polycode.fmt
-%format \   = "\mathbin{\lambda}"
 %format \\  = "\bbslash "
 %format ==  = "\mathbin{==}"
 %format /=  = "\mathbin{/=}"

@@ -22,6 +22,7 @@
 \bibliographystyle{ACM-Reference-Format}
 
 \usepackage{tikz}
+\usetikzlibrary{shapes.callouts}
 \newcommand\remember[2]{\mbox{\tikz[remember picture,baseline,trim left=default,trim right=default]\node(#1)[anchor=base,inner sep=0]{$#2$};}}
 
 % Record frame numbers as PS/PDF page labels
@@ -35,6 +36,19 @@
 %include preamble.lhs
 %format square x = x "^2"
 %format ... = "\dots"
+%format ^  = "\,"
+%format ^^ = "\;"
+%format e1
+%format e2
+%format e3
+%format v1
+%format v2
+%format v3
+%format s1
+%format s2
+%format s3
+%format (alert3 (content)) = "\alert<3>{" content "}"
+%format (CASES (a) (b) (c)) = "\left\{\begin{matrix}" a "\cr\relax" b "\cr\relax" c "\end{matrix}\right."
 \begin{comment}
 \begin{code}
 main = return ()
@@ -44,7 +58,16 @@ main = return ()
 \renewcommand{\bind}{\mathbin{>\!\!>\mkern-6.7mu=}}
 \renewcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!<}}% suggested by Neil Mitchell
 \renewcommand{\sequ}{\mathbin{>\!\!>}}
+\makeatletter
 \renewcommand{\hscodestyle}{\linespread{1}\selectfont}
+\newenvironment{tophscode}
+  {\hscodestyle\(%
+   \def\PT@@begin{\array[t]{@@{}l@@{}}}%
+   \let\PT@@end  \endarray
+   \let\PT@@cr   \@@arraycr
+   \expandafter\beginpolytable\ignorespaces}
+  {\endpolytable\)}
+\makeatother
 \raggedbottom
 
 \title{Monad 與副作用}
@@ -83,9 +106,7 @@ sumTree (Branch t1 t2)  =  sumTree t1;
 \end{spec}
 如此處理 |Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2))| 的方法是 |((0+3)+5)+2|\onslide<1>{ 還是 |3+(5+(2+0))| 還是 |3+(5+2)|？}
 
-\pause
-\texttt{TreeState-1.hs}
-用 |sumTree'| 定義 |sumTree|
+\onslide<2>{\texttt{TreeState-1.hs} 用 |sumTree'| 定義 |sumTree|}
 \end{frame}
 
 \begin{frame}{State threading}
@@ -313,7 +334,7 @@ digit :: (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
 
 digit (\d -> digit (\e -> digit (\y ->  if mod (d + e) 10 == y
                                         then ...
-                                        else \chosen -> [])))
+                                        else ^^ \chosen -> [])))
 \end{spec}
 \texttt{Crypta-1.hs}
 \onslide<5>
@@ -335,7 +356,356 @@ data Expr = ... | Amb Expr Expr
 \citep{mccarthy-basis}
 \end{frame}
 
-\begin{frame}[allowframebreaks]{References}
+\section{Monad}
+
+\begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
+\small\sethscode{tophscode}\hspace*{-9mm}%
+\begin{tikzpicture}[note/.style={rectangle callout, anchor=pointer,
+                                 draw=alerted text.fg,
+                                 fill=alerted text.bg,
+                                 text=alerted text.fg}]
+    \matrix [ampersand replacement=\&, anchor=base west, inner sep=0,
+             column sep=.8em, row sep=2ex]
+    {
+        \node (lit) {|eval (Lit v) =|};
+    \&
+        \onslide<1>{\node (add) {|eval (Add e1 e2) =|};}
+        \onslide<2->{\node (mul) {|eval (Mul e1 e2) =|};}
+    \&
+        \onslide<1>{\node (neg) {|eval (Neg e1) =|};}
+        \onslide<2->{\node (if) {|eval (If e1 et ef ^) =|};}
+    \\
+        \onslide<-2>{\node (lit state) {|\s -> (v, s)|};}
+        \onslide<3->{\node (return state) {%
+\begin{spec}
+alert3 (return v =)
+  \s -> (v, s)
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (add state) {%
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+            (v2, s2)  = eval e2 s1
+       in   (v1 + v2, s2)
+\end{spec}
+        };}
+        \onslide<2-5>{\node (mul state) {%
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+            (v2, s2)  = eval e2 s1
+       in   (v1 * v2, s2)
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (neg state) {%
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+       in   (-v1, s1)
+\end{spec}
+        };}
+        \onslide<2-5>{\node (if state) {%
+\begin{spec}
+\s ->  let (v1, s1)  = eval e1 s
+       in eval (if v1  then et
+                       else ef ^) s1
+\end{spec}
+        };}
+    \\
+        \onslide<-2>{\node (lit maybe) {|Just v|};}
+        \onslide<3->{\node (return maybe) {%
+\begin{spec}
+alert3 (return v =)
+  Just v
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (add maybe) {%
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  case eval e2 of
+                 Nothing  ->  Nothing
+                 Just v2  ->  Just (v1 + v2)
+\end{spec}
+        };}
+        \onslide<2-5>{\node (mul maybe) {%
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  case eval e2 of
+                 Nothing  ->  Nothing
+                 Just v2  ->  Just (v1 * v2)
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (neg maybe) {%
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  Just (-v1)
+\end{spec}
+        };}
+        \onslide<2-5>{\node (if maybe) {%
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  eval (if v1  then et
+                            else ef ^)
+\end{spec}
+        };}
+    \\
+        \onslide<-2>{\node (lit nondet) {|[v]|};}
+        \onslide<3->{\node (return nondet) {%
+\begin{spec}
+alert3 (return v =)
+  [v]
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (add nondet) {%
+\begin{spec}
+concatMap  (\v1 -> map  (\v2 -> v1+v2)
+                        (eval e2))
+           (eval e1)
+\end{spec}
+        };}
+        \onslide<2->{\node (mul nondet) {%
+\begin{spec}
+concatMap  (\v1 -> map  (\v2 -> v1*v2)
+                        (eval e2))
+           (eval e1)
+\end{spec}
+        };}
+    \&
+        \onslide<1>{\node (neg nondet) {%
+\begin{spec}
+map  (\v1 -> -v1)
+     (eval e1)
+\end{spec}
+        };}
+        \onslide<2->{\node (if nondet) {%
+\begin{spec}
+concatMap  (\v1 -> eval (if v1  then et
+                                else ef ^))
+           (eval e1)
+\end{spec}
+        };}
+    \\
+    };
+    \begin{scope}[transform canvas={xshift=-.4em, yshift=-1ex}]
+        \draw (add.north west) ++ (0,2ex) -- (add nondet.south west);
+        \begin{scope}[transform canvas={yshift=2ex}]
+            \draw (neg.north west) -- (neg state.north west);
+            \onslide<-5>{\draw (neg state.north west) -- (neg nondet.north west);}
+        \end{scope}
+        \draw (neg nondet.north west) ++ (0,2ex) -- (add nondet.south west -|| neg nondet.south west);
+    \end{scope}
+    \useasboundingbox;
+    \draw (add state.north west) ++ (-2in,1ex) -- ++ (9in,0);
+    \draw (add maybe.north west) ++ (-2in,1ex) -- ++ (9in,0);
+    \draw (add nondet.north west) ++ (-2in,1ex) -- ++ (9in,0);
+    \onslide<4>{
+        \begin{scope}[every node/.style={note, callout relative pointer={(-1em,1.2ex)}}]
+            \path (return state.base west) ++(2.5em,0) node {|return :: a -> s -> (a,s)|}
+                  (return maybe.base west) ++(2.5em,0) node {|return :: a -> Maybe a|}
+                  (return nondet.base west)++(2.5em,0) node {|return :: a -> [a]|};
+        \end{scope}
+    }
+    \onslide<5>{
+        \path (mul nondet.base west) ++(4.3em,0) node [note, callout relative pointer={(-.5em,1.2ex)}] {|concatMap :: (a -> [b]) -> [a] -> [b]|}
+              (mul nondet.north west) ++(9.5em,-.6ex) node [note, callout relative pointer={(-.5em,-1.2ex)}] {%
+\begin{spec}
+map :: (a -> b) -> [a] -> [b]
+map f = concatMap (return . f ^)
+\end{spec}
+              };
+    }
+    \onslide<6>{
+        \begin{scope}[every node/.style={anchor=base west, inner sep=0, text=alerted text.fg}]
+            \node at (mul state.base west) {%
+\begin{spec}
+concatMap :: (a -> State -> (b, State)) -> (State -> (a, State)) -> (State -> (b, State))
+concatMap f m = \s -> let (a, s1) = m s in f a s1
+concatMap f m = uncurry f . m
+\end{spec}
+            };
+            \node at (mul maybe.base west) {%
+\begin{spec}
+concatMap :: (a -> Maybe b) -> Maybe a -> Maybe b
+concatMap f Nothing   = Nothing
+concatMap f (Just a)  = f a
+\end{spec}
+            };
+        \end{scope}
+    }
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{抽象完畢}
+\mathindent=0pt
+\begin{spec}
+eval :: Expr -> M Int
+eval (Lit v)      = return v
+eval (Add e1 e2)  = concatMap  (\v1 -> concatMap  (\v2 -> return (v1+v2))
+                                                  (eval e2))
+                               (eval e1)
+\end{spec}
+\begin{spec}
+type M a = CASES (State -> (a, State)) (Maybe a) [a]
+
+return     :: a -> M a
+concatMap  :: (a -> M b) -> M a -> M b
+\end{spec}
+\end{frame}
+
+\begin{comment}
+\begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
+\small
+\tabcolsep=.4em
+\vspace*{-9pt}%
+\sethscode{tophscode}
+\hspace*{-1cm}%
+\begin{tabular}{l||l||l}
+\vrule width0pt height3ex
+|eval (Lit v) =| & |eval (Add e1 e2) =| & |eval (Neg e1) =|
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|\s -> (v, s)| &
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+            (v2, s2)  = eval e2 s1
+       in   (v1 + v2, s2)
+\end{spec}
+&
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+       in   (-v1, s1)
+\end{spec}
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|Just v| &
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  case eval e2 of
+                 Nothing  ->  Nothing
+                 Just v2  ->  Just (v1 + v2)
+\end{spec}
+&
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  Just (-v1)
+\end{spec}
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|[v]|
+&
+\begin{spec}
+concatMap  (\v1 -> map  (\v2 -> v1+v2)
+                        (eval e2))
+           (eval e1)
+\end{spec}
+&
+\begin{spec}
+map  (\v1 -> -v1)
+     (eval e1)
+\end{spec}
+\\\noalign{\kern-2ex}&&\\
+\end{tabular}
+\end{frame}
+
+\begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
+\small
+\tabcolsep=.4em
+\vspace*{-9pt}%
+\sethscode{tophscode}
+\hspace*{-1cm}%
+\begin{tabular}{l||l||l}
+\vrule width0pt height3ex
+|eval (Lit v) =| & |eval (Mul e1 e2) =| & |eval (If e1 et ef ^) =|
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|\s -> (v, s)| &
+\begin{spec}
+\s ->  let  (v1, s1)  = eval e1 s
+            (v2, s2)  = eval e2 s1
+       in   (v1 * v2, s2)
+\end{spec}
+&
+\begin{spec}
+\s ->  let (v1, s1)  = eval e1 s
+       in eval (if v1  then et
+                       else ef ^) s1
+\end{spec}
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|Just v| &
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  case eval e2 of
+                 Nothing  ->  Nothing
+                 Just v2  ->  Just (v1 * v2)
+\end{spec}
+&
+\begin{spec}
+case eval e1 of
+  Nothing  ->  Nothing
+  Just v1  ->  eval (if v1  then et
+                            else ef ^)
+\end{spec}
+\\\noalign{\kern-2ex}&&\\\hline\vrule width0pt height3ex
+|[v]|
+&
+\begin{spec}
+concatMap  (\v1 -> map  (\v2 -> v1*v2)
+                        (eval e2))
+           (eval e1)
+\end{spec}
+&
+\begin{spec}
+concatMap  (\v1 -> eval (if v1  then et
+                                else ef ^))
+           (eval e1)
+\end{spec}
+\\\noalign{\kern-2ex}&&\\
+\end{tabular}
+\end{frame}
+
+\begin{frame}{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
+\mathindent=0pt
+\begin{spec}
+return :: a -> [a]
+return a = [a]
+
+concatMap :: (a -> [b]) -> [a] -> [b]
+\end{spec}
+\vskip-\belowdisplayskip
+\vskip-\abovedisplayskip
+\vskip-\parskip
+\begin{overprint}
+\onslide<1>
+\begin{spec}
+map :: (a -> b) -> [a] -> [b]
+map f = concatMap (return . f)
+\end{spec}
+\onslide<2>
+\begin{spec}
+concatMap :: (a -> Maybe b) -> Maybe a -> Maybe b
+concatMap f Nothing   = Nothing
+concatMap f (Just a)  = f a
+
+concatMap :: (a -> s -> (b, s)) -> (s -> (a, s)) -> (s -> (b, s))
+concatMap f m = \s -> let (a, s1) = m s in f a s1
+concatMap f m = uncurry f . m
+
+eval (Lit v)      = return v
+eval (Add e1 e2)  = concatMap  (\v1 -> concatMap  (\v2 -> return (v1+v2))
+                                                  (eval e2))
+                               (eval e1)
+\end{spec}
+\end{overprint}
+\end{frame}
+\end{comment}
+
+\begin{frame}[allowframebreaks=1]{References}
 \renewcommand\bibsection{}
 \renewcommand\bibfont{\hscodestyle\footnotesize}
 \bibliography{ccshan}
@@ -346,9 +716,6 @@ data Expr = ... | Amb Expr Expr
 
 
 
-\section{Monads}
-
-Abstract from $\Conid{Expr}$ interpreter. \citep{wadler-monads}
 
 \section{Type classes}
 
