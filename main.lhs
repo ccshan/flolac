@@ -1,7 +1,8 @@
 \def~{\nobreakspace{}} % work around Debian bug 487974 and 534458 in texi2dvi
 \pagenumbering{arabic}
+\PassOptionsToPackage{hyphens}{url}
 \documentclass[aspectratio=169,professionalfonts]{beamer}
-\usetheme{metropolis}
+\usetheme[block=fill]{metropolis}
 \geometry{papersize={400bp,225bp}}
 \usepackage{microtype}
 \usepackage[T1]{fontenc}
@@ -16,6 +17,9 @@
 
 \usepackage{calc}
 \usepackage{comment}
+\usepackage{mathtools}
+\usepackage{prooftree1}
+\usepackage{booktabs}
 
 \usepackage{natbib}
 \citestyle{acmauthoryear}
@@ -24,6 +28,11 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.callouts}
 \newcommand\remember[2]{\mbox{\tikz[remember picture,baseline,trim left=default,trim right=default]\node(#1)[anchor=base,inner sep=0]{$#2$};}}
+\newcommand<>\inlinenote[4]{%
+    \begin{tikzpicture}[baseline=(about.base)]
+        \node (about) [inner sep=0] {#1};
+        \onslide#5{\node at (about.#2) [overlay, rectangle callout, callout relative pointer={#3}, anchor=pointer, draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg, text depth=.2ex] {#4};}
+    \end{tikzpicture}}
 
 % Record frame numbers as PS/PDF page labels
 \mode<presentation>
@@ -47,9 +56,21 @@
 %format s1
 %format s2
 %format s3
-%format (alert3 (content)) = "\alert<3>{" content "}"
+%format a1
+%format a2
+%format b1
+%format b2
+%format c1
+%format c2
+%format t1
+%format t2
+%format t1'
+%format t2'
+%format (remember (content)) = "\remember{it}{" content "}"
+%format (alert    (content)) = "\alert{"        content "}"
+%format (alert3   (content)) = "\alert<3>{"     content "}"
 %format ~> = "\mathinner\rightarrow"
-%format (CASES (a) (b) (c)) = "\left\{\begin{matrix}" a "\cr\relax" b "\cr\relax" c "\end{matrix}\right."
+%format (CASES (a) (b) (c)) = "\left\{\begin{array}{@{}l@{}}" a "\cr\relax" b "\cr\relax" c "\end{array}\right."
 \begin{comment}
 \begin{code}
 main = return ()
@@ -71,6 +92,8 @@ main = return ()
 \makeatother
 \raggedbottom
 
+\newcommand\exercise[1]{\texttt{\usebeamercolor[fg]{example text}#1.hs}}
+
 \title{Monad 與副作用}
 \date{2022-08}
 \author{單中杰}
@@ -79,23 +102,23 @@ main = return ()
 \maketitle
 
 \begin{frame}{暖身}
-純遞迴 \texttt{Tree-1.hs}
+純遞迴 \exercise{Tree-1}
 \begin{itemize}
     \item 型別→用途→範例→策略→定義→測試 \citep{felleisen-design}
     \item 先盡量把 |sumTree| 跟 |productTree| 寫得相似，\\
           然後才把它們抽象成更一般的、可重複利用的模組
 \end{itemize}
-解譯器 \texttt{Arith-1.hs}
+解譯器 \exercise{Arith-1}
 \begin{itemize}
     \item 隨機測試、property-based testing \citep{claessen-quickcheck}
-    \item 進階練習：定義變數 \texttt{Arith-2.hs}
+    \item 進階練習：定義變數 \exercise{Arith-2}
 \end{itemize}
 \end{frame}
 
 \section{個別的副作用}
 
 \begin{frame}{Accumulator passing}
-基本上副作用就是一段程式除了把傳進來的引數變成傳回去的結果以外做的事情。
+基本上副作用(side effect)就是一段程式除了把傳進來的引數變成傳回去的結果以外做的事情。
 
 我們寫程式有時候會直觀想用副作用。印象最原始的是 state（狀態）：
 \begin{spec}
@@ -107,7 +130,7 @@ sumTree (Branch t1 t2)  =  sumTree t1;
 \end{spec}
 如此處理 |Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2))| 的方法是 |((0+3)+5)+2|\onslide<1>{ 還是 |3+(5+(2+0))| 還是 |3+(5+2)|？}
 
-\onslide<2>{\texttt{TreeState-1.hs} 用 |sumTree'| 定義 |sumTree|}
+\onslide<2>{\exercise{TreeState-1} 用 |sumTree'| 定義 |sumTree|}
 \end{frame}
 
 \begin{frame}{State threading}
@@ -118,7 +141,7 @@ relabel (Leaf _)        =  next := next + 1;
                            Leaf next
 relabel (Branch t1 t2)  =  Branch (relabel t1) (relabel t2)
 \end{spec}
-\texttt{TreeState-2.hs}
+\exercise{TreeState-2}
 用 |relabel'| 定義 |relabel|
 \begin{spec}
 seen := S.empty
@@ -136,7 +159,7 @@ unique (Branch t1 t2)  =  unique t1 && unique t2
 \end{frame}
 
 \begin{frame}{Local vs global state}
-\texttt{UnionFind-1.hs}
+\exercise{UnionFind-1}
 \hfill Pointers, references, file system
 
 \begin{tikzpicture}[>=stealth, trim left=-\mathindent,
@@ -219,9 +242,9 @@ testState'  = M.fromList
 \end{frame}
 
 \begin{frame}{State-threading interpreter}
-\texttt{ArithState-1.hs}
+\exercise{ArithState-1}
 
-進階練習：調撥記憶體 \texttt{ArithState-2.hs}
+進階練習：調撥記憶體 \exercise{ArithState-2}
 \mathindent=0pt
 \begin{spec}
 data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
@@ -247,12 +270,12 @@ data Maybe     a = Nothing  | Just   a
 
 data Either b  a = Left b   | Right  a
 \end{spec}
-\texttt{TreeMaybe-1.hs}
+\exercise{TreeMaybe-1}
 \begin{itemize}
     \item |decTree| 碰到非正數是錯誤
     \item |productTree| 碰到零有捷徑
 \end{itemize}
-\texttt{ArithMaybe-1.hs}
+\exercise{ArithMaybe-1}
 \begin{itemize}
     \item 除以零是錯誤
 \end{itemize}
@@ -265,7 +288,7 @@ data Either b  a = Left b   | Right  a
 \[
     11, -1, 11\quad\rightarrow\quad\{-1,0,10,11,21\}
 \]
-\texttt{TreeNondet-1.hs}
+\exercise{TreeNondet-1}
 \begin{spec}
 blackjack' :: Tree -> Int -> [Int]
 blackjack' (Leaf n)        total  =  if total + n > 21 then total
@@ -337,7 +360,7 @@ digit (\d -> digit (\e -> digit (\y ->  if mod (d + e) 10 == y
                                         then ...
                                         else ^^ \chosen -> [])))
 \end{spec}
-\texttt{Crypta-1.hs}
+\exercise{Crypta-1}
 \onslide<5>
 \begin{spec}
 type Chosen = [(Char,Digit)]
@@ -345,12 +368,12 @@ digit :: Char -> (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
 
 add 'D' 'E' 'Y' ...
 \end{spec}
-\texttt{Crypta-2.hs} 適合自資料檔讀取新題
+\exercise{Crypta-2} 適合自資料檔讀取新題
 \end{overprint}
 \end{frame}
 
 \begin{frame}{Nondeterministic interpreter}
-\texttt{ArithNondet-1.hs}
+\exercise{ArithNondet-1}
 \begin{spec}
 data Expr = ... | Amb Expr Expr
 \end{spec}
@@ -546,14 +569,15 @@ concatMap f (Just a)  = f a
 \begin{frame}{抽象完畢}
 \mathindent=0pt
 \begin{spec}
-eval :: Expr -> M Int
+eval :: Expr -> alert M Int
 eval (Lit v)      = return v
 eval (Add e1 e2)  = concatMap  (\v1 -> concatMap  (\v2 -> return (v1+v2))
                                                   (eval e2))
                                (eval e1)
 \end{spec}
+先做|eval e1|這個\alert{動作}，再拿結果|u1|去做另一個\alert{動作}……
 \begin{spec}
-type M a = CASES (State -> (a, State)) (Maybe a) [a]
+type alert M a = CASES (State -> (a, State)) (Maybe a) [a]
 
 return     :: a -> M a                  -- unit, pure, eta $\eta$
 concatMap  :: (a -> M b) -> M a -> M b  -- bind, |=<<|, $\cdot^\star$
@@ -561,18 +585,19 @@ concatMap  :: (a -> M b) -> M a -> M b  -- bind, |=<<|, $\cdot^\star$
 \end{frame}
 
 \begin{frame}{Monad laws}
+\mathindent=0pt
 \begin{spec}
 return  :: a -> M a
 (>>=)   :: M a -> (a -> M b) -> M b
 
 return a >>= k           = k a
 m >>= return             = m
-m >>= (\a -> k a >>= l)  = (m >>= k) >>= l
+m >>= \a -> (k a >>= l)  = (m >>= k) >>= l
 \end{spec}
 \vspace*{-\belowdisplayskip}
 \begin{overprint}
 \onslide<1>
-檢查具體特例。\hfill\texttt{Laws-1.hs}\hfill
+檢查具體特例。\hfill\exercise{Laws-1}\hfill
 用|Int|以外的型別呢？|[]|以外的monad呢？
 \begin{spec}
 type M a = [a]
@@ -591,6 +616,502 @@ join    :: M (M a) -> M a
 \end{overprint}
 \end{frame}
 
+\section{Type classes}
+
+\begin{frame}{動機：很重要所以只說一遍}
+\mathindent=0pt
+\begin{spec}
+elem ::  alert a  ->  [alert a]     ->  Bool
+elem     x            []            =   False
+elem     x            (y:ys)        =   alert (x == y) || elem x ys
+\end{spec}
+\pause
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+elemInt  ::  alert Int   ->   [alert Int]   ->  Bool
+elemInt      x                []            =   False
+elemInt      x                (y:ys)        =   alert eqInt x y || elemInt x ys
+
+elemChar ::  alert Char  ->   [alert Char]  ->  Bool
+elemChar     x                []            =   False
+elemChar     x                (y:ys)        =   alert eqChar x y || elemChar x ys
+\end{spec}
+\pause
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+elemBy ::  alert ((a -> a -> Bool))  ->  alert a  ->  [alert a]   ->  Bool
+elemBy     (alert eq)                    x            []          =   False
+elemBy     (alert eq)                    x            (y:ys)      =   alert eq x y || elemBy eq x ys
+\end{spec}
+\end{frame}
+
+\begin{frame}{模組的\alt<1>{使用}{提供}者}
+\mathindent=0pt
+\begin{spec}
+type Eq a = a -> a -> Bool
+\end{spec}
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{overprint}
+\onslide<1>
+\begin{spec}
+lookupBy ::  Eq a  ->  a  ->  [(a, b)]     ->  Maybe b
+lookupBy     eq        x      []           =   Nothing
+lookupBy     eq        x      ((y,b):ybs)  =   if alert eq x y then Just b
+                                               else lookupBy eq x ybs
+
+nubBy ::  Eq a  ->  [a]  ->  [a]
+nubBy     eq        xs   =   alert (nubBy' eq) xs []
+
+nubBy' ::  Eq a  ->  [a]  ->  [a]   ->  [a]
+nubBy'     eq        []       seen  =   []
+nubBy'     eq        (x:xs)   seen  =   if alert (elemBy eq) x seen then nubBy' eq xs seen
+                                        else x : nubBy' eq xs (x:seen)
+\end{spec}
+\onslide<2>
+\begin{spec}
+eqPair :: Eq a -> Eq b -> Eq (a,b)
+eqPair eq_a eq_b (a1,b1) (a2,b2) = eq_a a1 a2 && eq_b b1 b2
+
+eqList :: Eq a -> Eq [a]
+eqList eq_a []      []      = True
+eqList eq_a (x:xs)  (y:ys)  = eq_a x y && eqList eq_a xs ys
+eqList eq_a _       _       = False
+\end{spec}
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+eqList (eqPair eqInt eqChar) :: Eq [(Int, Char)]
+\end{spec}
+\end{overprint}
+\end{frame}
+
+\begin{frame}{\alt<1>{內定的dictionary叫做instance}{\alt<2>{使用method時生成constraint累積成context}{\alt<3>{自動組成新instance}{為了指定內定而建立新型別}}} \hfill\mdseries\citep{wadler-ad-hoc}}
+\mathindent=0pt
+\onslide<2->{%
+\begin{spec}
+class Eq a where
+  (==) :: a -> a -> Bool
+\end{spec}
+}
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+instance Eq Int where
+  (==) = eqInt
+
+instance Eq Char where
+  (==) = eqChar
+\end{spec}
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip-1\baselineskip}
+\begin{overprint}
+\onslide<2>
+\begin{spec}
+elem :: alert ((Eq a) =>)  a  ->  [a]     ->  Bool
+elem                       x      []      =   False
+elem                       x      (y:ys)  =   x (alert (==)) y || alert elem x ys
+lookup :: alert ((Eq a) =>)  a  ->  [(a, b)]     ->  Maybe b
+lookup                       x      []           =   Nothing
+lookup                       x      ((y,b):ybs)  =   if x (alert (==)) y then Just b
+                                                     else alert lookup x ybs
+\end{spec}
+\onslide<3>
+\begin{spec}
+instance alert ((Eq a, Eq b) =>) Eq (a,b) where
+  (a1,b1) == (a2,b2) = a1 (alert (==)) a2 && b1 (alert (==)) b2
+
+instance alert ((Eq a) =>) Eq [a] where
+  []      ==  []      =  True
+  (x:xs)  ==  (y:ys)  =  x (alert (==)) y && xs (alert (==)) ys
+  _       ==  _       =  False
+\end{spec}
+\onslide<4>
+\begin{spec}
+newtype Set a = MkSet [a]
+
+instance (Eq a) => Eq (Set a) where
+  MkSet xs == MkSet ys =  all (\x -> elem x ys) xs &&
+                          all (\y -> elem y xs) ys
+\end{spec}
+\end{overprint}
+\end{frame}
+
+\begin{frame}{\alt<1>{Default method implementation}{\alt<2>{Class contexts (superclasses)}{There's no type class like |Show| type class}}}
+\mathindent=0pt
+\begin{spec}
+class Eq a where
+  (==)  :: a -> a -> Bool
+  (/=)  :: a -> a -> Bool
+
+  x  /=  y  =  not  (x  ==  y)
+  x  ==  y  =  not  (x  /=  y)
+\end{spec}
+\pause
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+class (Eq a) => Ord a where
+  (<), (<=), (>), (>=) :: a -> a -> Bool
+
+  x  <   y  =  not  (x == y)  &&       (x <= y)
+  x  >   y  =  not  (x == y)  &&  not  (x <= y)
+  x  >=  y  =       (x == y)  ||  not  (x <= y)
+  ...
+\end{spec}
+\pause
+\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+\begin{spec}
+class Show a where show :: a -> String ...
+\end{spec}
+\end{frame}
+
+\begin{frame}{|Monad|是一個type class}
+\mathindent=0pt
+\begin{spec}
+class Monad m where
+  return  :: a -> m a
+  (>>=)   :: m a -> (a -> m b) -> m b
+
+newtype State s a = State {runState :: s -> (a, s)}
+
+instance Monad (State s) where
+  return a  = State (\s ->  (a, s))
+  m >>= k   = State (\s ->  let (a, s') = runState m s
+                            in runState (k a) s')
+\end{spec}
+至於|Maybe|與|[]|的|Monad| instances則已有內建
+\end{frame}
+
+\begin{frame}{輕鬆實作superclasses}
+\mathindent=0pt
+\begin{spec}
+class Functor m where
+  fmap    :: (a -> b) -> m a -> m b
+
+class (Functor m) => Applicative m where
+  pure    :: a -> m a
+  (<*>)   :: m (a -> b) -> m a -> m b
+
+class (Applicative m) => Monad m where
+  return  :: a -> m a
+  (>>=)   :: m a -> (a -> m b) -> m b
+
+instance Functor (State s) where fmap = liftM
+
+instance Applicative (State s) where pure = return; (<*>) = ap
+\end{spec}
+\end{frame}
+
+\begin{frame}{來寫範例吧！}
+\exercise{ArithMonad-1}
+
+\exercise{ArithMonad-2}
+
+\exercise{ArithMonad-3}
+\end{frame}
+
+\section{Imperative programming}
+
+\begin{frame}{I/O}
+\exercise{ArithIO-1}
+「輸入」、「輸出」是什麼意思呢？
+
+適合用什麼monad來表達呢？
+\pause
+\begin{spec}
+data IO a  =  Return a
+           |  Input (Int -> IO a)
+           |  Output Int (IO a)
+\end{spec}
+對程式而言，外界是一個抽象的monad
+\vskip\abovedisplayskip
+\begin{quote}
+    A value of type |IO a| is an ``action'' that, when performed, may do some
+    input/output, before delivering a value of type~|a|.
+
+    |type IO a = World -> (a, World)|
+
+    \hfill\citep{peyton-jones-tackling}
+\end{quote}
+\end{frame}
+
+\begin{frame}{I/O也是有意義的 \hfill\mdseries\citep{peyton-jones-tackling}}
+\bigskip
+\begin{overprint}
+\onslide<-2>
+\begin{verbatim}
+int main() {
+  return putchar(toupper(getchar()));
+}
+\end{verbatim}
+\onslide<3->
+\begin{proofrules}
+\advance \leftskip -5mm
+\advance \rightskip -5mm
+\[ \justifies \{\mathbb{E}[|putChar c        |]\} \xrightarrow{!|c|} \{\mathbb{E}[|return ()|]\} \using \text{PUTC} \]
+\[ \justifies \{\mathbb{E}[|getChar          |]\} \xrightarrow{?|c|} \{\mathbb{E}[|return c |]\} \using \text{GETC} \]
+\[ \justifies \{\mathbb{E}[|return|\:N|>>=|M\,]\} \rightarrow        \{\mathbb{E}[M\;N     \,]\} \using \text{LUNIT} \]
+\[ \llbracket M\,\rrbracket = \llbracket V\,\rrbracket \quad M \nequiv V
+   \justifies \{\mathbb{E}[M                \,]\} \rightarrow        \{\mathbb{E}[V        \,]\} \using \text{FUN} \]
+\end{proofrules}
+\medskip
+\end{overprint}
+\alt<-2>{可譯為}{Semantics以labeled transition在外、denotation在內}
+\[\begin{array}{>{{}}c<{{}}ll}
+    & \onslide<4->{\{}
+      \onslide<-3>{\mathllap{|main|\quad=\quad}}
+      \inlinenote<2>{|getChar|}{south}{(0,1.2ex)}{|getChar :: IO Char|}
+      {}|>>= \c ->|{}
+      \inlinenote<2>{|putChar|}{north}{(0,-1.2ex)}{|putChar :: Char -> IO ()|}
+      \;|(|{}
+      \inlinenote<2>{|toUpper|}{south}{(0,1.2ex)}{|toUpper :: Char -> Char|}
+      \;|c)|
+      \onslide<2>{\mathrlap{\alert{\quad|::|\quad???}}}
+      \onslide<4->\} \\
+    \smash{\xrightarrow{?|'w'|}} & \{|return 'w' >>= \c -> putChar (toUpper c)|\} & \text{(GETC)}  \\
+    \rightarrow                  & \{|(\c -> putChar (toUpper c)) 'w'         |\} & \text{(LUNIT)} \\
+    \rightarrow                  & \{|putChar 'W'                             |\} & \text{(FUN)}   \\
+    \smash{\xrightarrow{!|'W'|}} & \{|return ()                               |\} & \text{(PUTC)}
+\end{array}\]
+\end{frame}
+
+\begin{frame}{Do notation}
+\mathindent=0pt
+\begin{overprint}
+\onslide<1>
+\begin{spec}
+main =  getChar >>= \c ->
+        putChar (toUpper c)
+\end{spec}
+\onslide<2>
+\begin{spec}
+main =  getChar >>= \c1 ->
+        getChar >>= \c2 ->
+        putChar (toUpper c1) >>= \() ->
+        putChar (toLower c2)
+\end{spec}
+\onslide<3>
+\begin{spec}
+main =  getChar >>= \c1 ->
+        getChar >>= \c2 ->
+        putChar (toUpper c1) (remember (>>))
+        putChar (toLower c2)
+\end{spec}
+\tikz[remember picture,overlay]
+    \node at (it.east)
+        [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer,
+         draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+\begin{spec}
+(>>) :: (Monad m) => m a -> m b -> m b
+m >> n = m >>= \_ -> n
+\end{spec}
+};
+\onslide<4>
+\begin{spec}
+main =  getChar >>= \c1 ->
+        getChar >>
+        putChar (toUpper c1) (remember (>>))
+        putChar (toLower c1)
+\end{spec}
+\tikz[remember picture,overlay]\node at (it.east) [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer, draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+\begin{spec}
+(>>) :: (Monad m) => m a -> m b -> m b
+m >> n = m >>= \_ -> n
+\end{spec}
+};
+\end{overprint}
+\vspace*{-1\belowdisplayskip}
+\begin{overprint}
+\onslide<1>
+\begin{spec}
+main =  do  c <- getChar
+            putChar (toUpper c)
+\end{spec}
+\onslide<2>
+\begin{spec}
+main =  do  c1 <- getChar
+            c2 <- getChar
+            () <- putChar (toUpper c1)
+            putChar (toLower c2)
+\end{spec}
+\onslide<3>
+\begin{spec}
+main =  do  c1 <- getChar
+            c2 <- getChar
+            putChar (toUpper c1)
+            putChar (toLower c2)
+\end{spec}
+\onslide<4>
+\begin{spec}
+main =  do  c1 <- getChar
+            getChar
+            putChar (toUpper c1)
+            putChar (toLower c1)
+\end{spec}
+\end{overprint}
+\end{frame}
+
+\begin{frame}[t]{Do notation用用看}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+把這個interpreter\dots & 用這個monad\dots & 在這裡寫成do notation: \\
+\midrule
+\exercise{ArithMonad-1} &\remember{state int}{|State Int|} &$\rightarrow$ \exercise{ArithDo-1}\\
+\exercise{ArithMonad-2} &                     |Maybe|      &$\rightarrow$ \exercise{ArithDo-2}\\
+\exercise{ArithMonad-3} &                     |[]|         &$\rightarrow$ \exercise{ArithDo-3}\\
+\exercise{ArithIO-1}    &                     |IO|         &$\rightarrow$ \exercise{ArithDo-4}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\pause
+\tikz[remember picture, overlay]
+    \node at (state int.south east)
+        [rectangle callout, callout relative pointer={(-2em,5em)}, anchor=pointer,
+         draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+\begin{spec}
+import Control.Monad.Trans.State
+
+instance Monad (State s) where ...
+
+runState  :: State s a -> (s -> (a, s))
+
+state     :: (s -> (a, s)) -> State s a
+\end{spec}
+};
+\end{frame}
+
+\begin{frame}{Do notation表達了monad laws的imperative直覺}
+\texths\hscodestyle
+\begin{minipage}{.48\textwidth}
+\begin{block}{Left identity}
+\centering\(\begin{array}{rcl}
+|return a >>= \x -> k x|
+&=& |k a| \\[1ex]
+\colorbox{white}{%
+\begin{spec}
+do  x <- return a
+    k x
+\end{spec}
+}
+&=& |k a|
+\end{array}\)
+\end{block}
+\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}
+\begin{block}{Right identity}
+\centering\(\begin{array}{rcl}
+|m >>= \x -> return x|
+&=& |m| \\[1ex]
+\colorbox{white}{%
+\begin{spec}
+do  x <- m
+    return x
+\end{spec}
+}
+&=& |m|
+\end{array}\)
+\end{block}
+\end{minipage}
+
+\vspace{.03\textwidth-\parskip}
+\begin{block}{Associativity}
+\centering\(\begin{array}{rcl}
+|m >>= \a -> (k a >>= \b -> l b)|
+&=& |(m >>= \a -> k a) >>= \b -> l b| \\[1ex]
+\colorbox{white}{%
+\begin{spec}
+do  a <- m
+    b <- k a
+    l b
+\end{spec}
+}
+&=&
+\colorbox{white}{%
+\begin{spec}
+do  b <- do  a <- m
+             k a
+    l b
+\end{spec}
+}
+\end{array}\)
+\end{block}
+\end{frame}
+
+\begin{frame}{單一程式可以應用於各種monad}
+\begin{spec}
+traverse :: (Monad m) => (a -> m b) -> [a] -> m [b]  -- 又名|mapM|
+traverse f []      = return []
+traverse f (a:as)  = do  b   <- f a
+                         bs  <- traverse f as
+                         return (b:bs)
+\end{spec}
+有什麼用呢？
+\begin{spec}
+renumber  "hello"  = [0,1,2,3,4]
+
+choices   [2,3]    = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]]
+
+dec       [2,5,3]  = Just [1,4,2]
+dec       [2,0,3]  = Nothing
+\end{spec}
+再多找一些用處！
+\exercise{Traverse-1}
+\end{frame}
+
+\begin{frame}{單一程式可以應用於各種monad}
+\begin{spec}
+data Tree = Leaf Int | Branch Tree Tree
+  deriving (Eq, Show)
+
+traverseTree :: (Monad m) => (Int -> m Int) -> Tree -> m Tree
+traverseTree f (Leaf n)        = do  n' <- f n
+                                     return (Leaf n')
+traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
+                                     t2' <- traverseTree f t2
+                                     return (Branch t1' t2')
+\end{spec}
+有什麼用呢？
+\exercise{Traverse-1}
+
+很多資料結構只要提供|traverse|就是用處很廣的API了。
+\end{frame}
+
+\begin{frame}{自己的迴圈自己寫}
+\exercise{Loops-1}
+\begin{enumerate}
+\item |forever action = action >> forever action| 型別為何？
+\item 用|forever|寫一個一直讀一行（用|getLine|）然後馬上寫出（用|putStrLn|）的程式。
+\item 定義|replicateM_ :: (Monad m) => Int -> m a -> m ()|
+      使得|replicateM_ n action|的意思是把|action|重複|n|遍。有什麼用？
+\item 定義|for :: (Monad m) => Int -> Int -> (Int -> m a) -> m ()|
+      使得|for from to f|的意思是做從|f from|到|f to|的一系列動作。有什麼用？
+\item 定義|while :: (Monad m) => m Bool -> m a -> m ()|
+      使得|while cond action|的意思是重複做|action|直到|cond|的結果成為|False|為止。有什麼用？
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{兩種monad的定義可以互相轉換}
+\exercise{Join-1}
+\begin{center}
+\begin{tikzpicture}[>=stealth]
+    \node (old) at (0,3) [anchor=west] {\texths\hscodestyle
+\begin{spec}
+return  :: a -> m a
+fmap    :: (a -> b) -> m a -> m b
+join    :: m (m a) -> m a
+\end{spec}
+    };
+    \node (new) at (0,0) [anchor=west] {\texths\hscodestyle
+\begin{spec}
+return  :: a -> m a
+(>>=)   :: m a -> (a -> m b) -> m b
+\end{spec}
+    };
+    \draw [->, bend right] (old) to node [align=left,anchor=east] {用|fmap|和|join|\\定義|>>=|} (new);
+    \draw [->, bend right] (new) to node [align=left,anchor=west] {用|return|和|>>=|\\定義|fmap|和|join|} (old);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\section{組合副作用}
+
 \begin{frame}[allowframebreaks=1]{References}
 \renewcommand\bibsection{}
 \renewcommand\bibfont{\hscodestyle\footnotesize}
@@ -603,63 +1124,28 @@ join    :: M (M a) -> M a
 
 
 
-\section{Type classes}
-
-Examples: $\Conid{Eq}$, $\Conid{Ord}$, $\Conid{Show}$. \citep{wadler-ad-hoc}
-
-$\Conid{Monad}$ class, inheriting from $\Conid{Applicative}$, inheriting from $\Conid{Functor}$.
-
-\texttt{ArithMonad-1.hs}
-\texttt{ArithMonad-2.hs}
-\texttt{ArithMonad-3.hs}
-
-\section{Imperative programming}
-\texttt{ArithIO-1.hs}
-
-How (and in what monad) to interpret |Input| and |Output| is an open-ended question.
-
-\begin{quote}
-    A value of type |IO a| is an ``action'' that, when performed, may do some
-    input/output, before delivering a value of type~|a|.
-
-    |type IO a = World -> (a, World)|
-\end{quote}
-
-Execution by \emph{monad laws} and labeled transitions (\citep[Figure~3]{peyton-jones-tackling})
-
-Translating impure programs to monadic form
-
-\subsection{Do notation}
-\texttt{ArithDo-1.hs}
-\texttt{ArithDo-2.hs}
-\texttt{ArithDo-3.hs}
-\texttt{ArithDo-4.hs}
-
-\subsection{Polymorphism across monads}
-\texttt{Traverse-1.hs}
-
 \section{Combining side effects}
 
 \subsection{State and IO}
-\texttt{StateIO-1.hs}
-\texttt{StateIO-2.hs}
+\exercise{StateIO-1}
+\exercise{StateIO-2}
 
 \subsection{State and exception}
-\texttt{StateMaybe-1.hs}
-\texttt{StateMaybe-2.hs}
+\exercise{StateMaybe-1}
+\exercise{StateMaybe-2}
 
 \subsection{State and nondeterminism}
-\texttt{StateNondet-1.hs}
-\texttt{StateNondet-2.hs}
+\exercise{StateNondet-1}
+\exercise{StateNondet-2}
 
 \citep{fischer-purely-jfp}
 
 \subsection{Monad transformers}
-\texttt{StateIO-3.hs}
-\texttt{StateMaybe-3.hs}
-\texttt{StateMaybe-4.hs}
-\texttt{StateNondet-3.hs}
-\texttt{StateNondet-4.hs}
+\exercise{StateIO-3}
+\exercise{StateMaybe-3}
+\exercise{StateMaybe-4}
+\exercise{StateNondet-3}
+\exercise{StateNondet-4}
 \citep{liang-interpreter}
 
 \begin{spec}
@@ -696,12 +1182,12 @@ type Dist = WriterT (Product Double) []
 \section{Automatic differentiation}
 \citep{krawiec-provably}
 
-\texttt{Diff-1.hs}
+\exercise{Diff-1}
 \citep{claessen-quickcheck}
 
-\texttt{Diff-2.hs}
+\exercise{Diff-2}
 |randomParams >>= optimize|
 
-\texttt{Diff-3.hs}
-\texttt{Diff-4.hs}
-\texttt{Diff-5.hs}
+\exercise{Diff-3}
+\exercise{Diff-4}
+\exercise{Diff-5}

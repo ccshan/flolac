@@ -16,6 +16,8 @@ EXERCISES = \
 	ArithIO-1.hs \
 	ArithDo-1.hs ArithDo-2.hs ArithDo-3.hs ArithDo-4.hs \
 	Traverse-1.hs \
+	Loops-1.hs \
+	Join-1.hs \
 	StateIO-1.hs StateIO-2.hs StateIO-3.hs \
 	StateMaybe-1.hs StateMaybe-2.hs StateMaybe-3.hs StateMaybe-4.hs \
 	StateNondet-1.hs StateNondet-2.hs StateNondet-3.hs StateNondet-4.hs \
