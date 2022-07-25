@@ -810,12 +810,12 @@ class Monad m where
   return  :: a -> m a
   (>>=)   :: m a -> (a -> m b) -> m b
 
-newtype State s a = State {runState :: s -> (a, s)}
+newtype State s a = remember MkState {remember0 runState :: s -> (a, s)}
 
 instance Monad (State s) where
-  return a  = State (\s ->  (a, s))
-  m >>= k   = State (\s ->  let (a, s') = runState m s
-                            in runState (k a) s')
+  remember1 return a      = MkState (\s ->  (a, s))
+  m (remember2 (>>=)) k   = MkState (\s ->  let (a, s') = runState m s
+                                            in runState (k a) s')
 \end{spec}
 至於|Maybe|與|[]|的|Monad| instances則已有內建
 \end{frame}
@@ -1160,7 +1160,7 @@ return  :: a -> m a
 \begin{frame}{邊state邊IO}
 \mathindent=0pt
 \begin{spec}
-newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
+newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{spec}
 \exercise{StateIO-1}
 \begin{itemize}

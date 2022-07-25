@@ -53,19 +53,19 @@ eval (Lit v)     = return v
 eval (Add e1 e2) = eval e1 >>= \v1 -> eval e2 >>= \v2 -> return (v1 + v2)
 eval (Mul e1 e2) = eval e1 >>= \v1 -> eval e2 >>= \v2 -> return (v1 * v2)
 #if STEP == 1
-eval Get         = State (\s -> (s, s))
-eval (Put e)     = eval e >>= \v -> State (\_ -> (v, v))
+eval Get         = MkState (\s -> (s, s))
+eval (Put e)     = eval e >>= \v -> MkState (\_ -> (v, v))
 
-newtype State s a = State {runState :: s -> (a, s)}
+newtype State s a = MkState {runState :: s -> (a, s)}
 
 instance Functor (State s) where fmap = liftM
 
 instance Applicative (State s) where pure = return; (<*>) = ap
 
 instance Monad (State s) where
-  return a = State (\s -> (a, s))
-  m >>= k  = State (\s -> let (a, s') = runState m s
-                          in runState (k a) s')
+  return a = MkState (\s -> (a, s))
+  m >>= k  = MkState (\s -> let (a, s') = runState m s
+                            in runState (k a) s')
 #endif
 #if STEP == 2
 eval (Div e1 e2) = eval e1 >>= \v1 -> eval e2 >>= \v2 ->

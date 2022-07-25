@@ -20,9 +20,9 @@ main = do putStrLn "prefixSumTrace [2,5,3]"
 prefixSumTrace :: [Int] -> IO [Int]
 prefixSumTrace ns =
 #if STEP == 1
-  do (ns',_) <- runStateIO (traverse (\n -> StateIO (\s -> let n' = s + n in
-                                                           do print n'
-                                                              return (n',n')))
+  do (ns',_) <- runStateIO (traverse (\n -> MkStateIO (\s -> let n' = s + n in
+                                                             do print n'
+                                                                return (n',n')))
                                      ns)
                            0
      return ns'
@@ -39,10 +39,10 @@ prefixSumTrace ns =
 prefixWeightedSumTrace :: [Int] -> IO [Int]
 prefixWeightedSumTrace ns =
 #if STEP == 1
-  do (ns',_) <- runStateIO (traverse (\n -> StateIO (\s -> do str <- getLine
-                                                              let n' = s + n * read str
-                                                              print n'
-                                                              return (n',n')))
+  do (ns',_) <- runStateIO (traverse (\n -> MkStateIO (\s -> do str <- getLine
+                                                                let n' = s + n * read str
+                                                                print n'
+                                                                return (n',n')))
                                      ns)
                            0
      return ns'
@@ -58,7 +58,7 @@ prefixWeightedSumTrace ns =
 #endif
 
 #if STEP <= 2
-newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
+newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 
 instance Functor (StateIO s) where fmap = liftM
 
@@ -66,20 +66,20 @@ instance Applicative (StateIO s) where pure = return; (<*>) = ap
 
 instance Monad (StateIO s) where
 #ifdef SOLUTION
-  return a = StateIO (\s -> return (a, s))
-  m >>= k  = StateIO (\s -> do (a, s') <- runStateIO m s
-                               runStateIO (k a) s')
+  return a = MkStateIO (\s -> return (a, s))
+  m >>= k  = MkStateIO (\s -> do (a, s') <- runStateIO m s
+                                 runStateIO (k a) s')
 #endif
 #endif
 
 #if STEP == 2
 #ifdef SOLUTION
 lift :: IO a -> StateIO s a
-lift m = StateIO (\s -> do a <- m
-                           return (a, s))
+lift m = MkStateIO (\s -> do a <- m
+                             return (a, s))
 
 change :: (s -> s) -> StateIO s s
-change f = StateIO (\s -> let s' = f s in return (s',s'))
+change f = MkStateIO (\s -> let s' = f s in return (s',s'))
 #endif
 #endif
 
