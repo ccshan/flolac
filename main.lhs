@@ -726,25 +726,33 @@ eqList (eqPair eqInt eqChar) :: Eq [(Int, Char)]
 \end{overprint}
 \end{frame}
 
-\begin{frame}{\alt<1>{內定的dictionary叫做instance}{\alt<2>{使用method時生成constraint累積成context}{\alt<3>{自動組成新instance}{為了指定內定而建立新型別}}} \hfill\mdseries\citep{wadler-ad-hoc}}
+\begin{frame}{\alt<-2>{內定的dictionary叫做instance}{\alt<3>{使用method時生成constraint累積成context}{\alt<4>{自動組成新instance}{為了指定內定而建立新wrapper型別}}} \hfill\mdseries\citep{wadler-ad-hoc}}
 \mathindent=0pt
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \onslide<2->{%
 \begin{spec}
 class Eq a where
   (==) :: a -> a -> Bool
 \end{spec}
 }
-\vspace*{-1\abovedisplayskip-1\belowdisplayskip}
+
+\vspace*{-1\baselineskip}
+\begin{minipage}{.5\textwidth}
 \begin{spec}
 instance Eq Int where
-  (==) = eqInt
-
-instance Eq Char where
-  (==) = eqChar
+  (remember0 ((==))) = eqInt
 \end{spec}
-\vspace*{-1\abovedisplayskip-1\belowdisplayskip-1\baselineskip}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+\begin{spec}
+instance Eq Char where
+  (remember1 ((==))) = eqChar
+\end{spec}
+\end{minipage}
+
 \begin{overprint}
-\onslide<2>
+\onslide<3>
 \begin{spec}
 elem :: alert ((Eq a) =>)  a  ->  [a]     ->  Bool
 elem                       x      []      =   False
@@ -754,7 +762,7 @@ lookup                       x      []           =   Nothing
 lookup                       x      ((y,b):ybs)  =   if x (alert (==)) y then Just b
                                                      else alert lookup x ybs
 \end{spec}
-\onslide<3>
+\onslide<4>
 \begin{spec}
 instance alert ((Eq a, Eq b) =>) Eq (a,b) where
   (a1,b1) == (a2,b2) = a1 (alert (==)) a2 && b1 (alert (==)) b2
@@ -764,15 +772,34 @@ instance alert ((Eq a) =>) Eq [a] where
   (x:xs)  ==  (y:ys)  =  x (alert (==)) y && xs (alert (==)) ys
   _       ==  _       =  False
 \end{spec}
-\onslide<4>
+\onslide<5>
 \begin{spec}
 newtype Set a = MkSet [a]
 
 instance (Eq a) => Eq (Set a) where
-  MkSet xs == MkSet ys =  all (\x -> elem x ys) xs &&
-                          all (\y -> elem y xs) ys
+  MkSet xs (remember2 (==)) MkSet ys =  all (\x -> elem x ys) xs &&
+                                        all (\y -> elem y xs) ys
 \end{spec}
 \end{overprint}
+\begin{tikzpicture}[remember picture, overlay]
+\onslide<2>{
+    \path (it0.south) ++(-3em,-2ex) node
+        [rectangle callout, callout absolute pointer={(it0.south)}, anchor=north west, alerted,
+         callout pointer xshift=-2em]
+        {|(==) :: Int -> Int -> Bool|};
+    \path (it1.south) ++(-3em,-2ex) node
+        [rectangle callout, callout absolute pointer={(it1.south)}, anchor=north west, alerted,
+         callout pointer xshift=-1em]
+        {|(==) :: Char -> Char -> Bool|};
+}
+\onslide<5>{
+    \path (it2.south) ++(-4em,-4ex) node
+        [rectangle callout, callout absolute pointer={(it2.south)}, anchor=north west, alerted,
+         callout pointer xshift=-2em]
+        {|(==) :: Set a -> Set a -> Bool|};
+}
+\end{tikzpicture}
+\vspace*{-1\baselineskip}
 \end{frame}
 
 \begin{frame}{\alt<1>{Default method implementation}{\alt<2>{Class contexts (superclasses)}{There's no type class like |Show| type class}}}
@@ -817,6 +844,28 @@ instance Monad (State s) where
   m (remember2 (>>=)) k   = MkState (\s ->  let (a, s') = runState m s
                                             in runState (k a) s')
 \end{spec}
+\begin{tikzpicture}[remember picture, overlay]
+\onslide<2->{
+    \path (it.north east) ++(5em,.5ex) node
+        [rectangle callout, callout absolute pointer={(it.north east)}, anchor=south west, alerted]
+        {|MkState :: (s -> (a, s)) -> State s a|};
+    \path (it0.south east) ++(1em,-.5ex) node
+        [rectangle callout, callout absolute pointer={(it0.south)}, anchor=north west, alerted]
+        {|runState :: State s a -> (s -> (a, s))|};
+}
+\onslide<3->{
+    \path (it2.south) ++(-3em,-5ex) node
+        [rectangle callout, callout absolute pointer={(it2.south)}, anchor=north west, alerted,
+         callout pointer xshift=-4em]
+        {|(>>=) :: State s a -> (a -> State s b) -> State s b|};
+    \path (it1.south west) ++(-3em,-4ex) node
+        [rectangle callout, callout absolute pointer={(it1.south west)}, anchor=north west, alerted,
+         callout pointer xshift=-3em]
+        {|return :: a -> State s a|};
+}
+\end{tikzpicture}
+
+\vfill\hfill
 至於|Maybe|與|[]|的|Monad| instances則已有內建
 \end{frame}
 
