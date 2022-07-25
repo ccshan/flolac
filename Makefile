@@ -133,3 +133,4 @@ main.pdf: preamble.tex
 
 %.pdf: %.tex
 	texi2dvi --pdf --batch $<
+	#$(PDFLATEX) --batch $<

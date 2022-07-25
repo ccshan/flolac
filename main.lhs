@@ -1249,6 +1249,7 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{frame}
 
 \begin{frame}{Monad transformers用用看}
+\citep{liang-interpreter}
 \dots
 \exercise{StateIO-3}
 \begin{itemize}
