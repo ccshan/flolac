@@ -9,8 +9,8 @@ EXERCISES = \
 	TreeMaybe-1.hs \
 	ArithMaybe-1.hs \
 	TreeNondet-1.hs \
-	Crypta-1.hs Crypta-2.hs \
 	ArithNondet-1.hs \
+	Crypta-1.hs Crypta-2.hs Crypta-3.hs \
 	Laws-1.hs \
 	ArithMonad-1.hs ArithMonad-2.hs ArithMonad-3.hs \
 	ArithIO-1.hs \

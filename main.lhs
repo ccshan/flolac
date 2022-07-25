@@ -27,12 +27,30 @@
 
 \usepackage{tikz}
 \usetikzlibrary{shapes.callouts}
+\tikzset{alerted/.style={draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg}}
 \newcommand\remember[2]{\mbox{\tikz[remember picture,baseline,trim left=default,trim right=default]\node(#1)[anchor=base,inner sep=0]{$#2$};}}
 \newcommand<>\inlinenote[4]{%
     \begin{tikzpicture}[baseline=(about.base)]
         \node (about) [inner sep=0] {#1};
-        \onslide#5{\node at (about.#2) [overlay, rectangle callout, callout relative pointer={#3}, anchor=pointer, draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg, text depth=.2ex] {#4};}
+        \onslide#5{\node at (about.#2) [overlay, rectangle callout, callout relative pointer={#3}, anchor=pointer, alerted, text depth=.2ex] {#4};}
     \end{tikzpicture}}
+
+% https://tex.stackexchange.com/questions/150737/tikz-callout-positioning-start-of-pointer
+\usepackage{ted}
+\makeatletter
+\newlength{\callout@@move@@pointer@@start@@x}
+\newlength{\callout@@move@@pointer@@start@@y}
+\pgfkeys{/pgf/.cd,
+    callout pointer xshift/.code={\setlength{\callout@@move@@pointer@@start@@x}{#1}},
+    callout pointer yshift/.code={\setlength{\callout@@move@@pointer@@start@@y}{#1}}}
+\Substitute*[\def\pgf@@lib@@rectanglecallout@@pointer]{\pgf@@lib@@rectanglecallout@@pointer}%
+    {\advance\pgf@@x\pgf@@xb
+     \advance\pgf@@y\pgf@@yb}
+    {\advance\pgf@@x\pgf@@xb
+     \advance\pgf@@x\callout@@move@@pointer@@start@@x
+     \advance\pgf@@y\pgf@@yb%
+     \advance\pgf@@y\callout@@move@@pointer@@start@@y}
+\makeatother
 
 % Record frame numbers as PS/PDF page labels
 \mode<presentation>
@@ -44,9 +62,10 @@
 
 %include preamble.lhs
 %format square x = x "^2"
-%format ... = "\dots"
-%format ^  = "\,"
-%format ^^ = "\;"
+%format ... = "\dots "
+%format ^   = "\,"
+%format ^^^ = "\qquad "
+%format !!! = "{}"
 %format e1
 %format e2
 %format e3
@@ -66,9 +85,19 @@
 %format t2
 %format t1'
 %format t2'
-%format (remember (content)) = "\remember{it}{" content "}"
-%format (alert    (content)) = "\alert{"        content "}"
-%format (alert3   (content)) = "\alert<3>{"     content "}"
+%format (remember  (content)) = "\remember{it}{"  content "}"
+%format (remember0 (content)) = "\remember{it0}{" content "}"
+%format (remember1 (content)) = "\remember{it1}{" content "}"
+%format (remember2 (content)) = "\remember{it2}{" content "}"
+%format (remember3 (content)) = "\remember{it3}{" content "}"
+%format (remember4 (content)) = "\remember{it4}{" content "}"
+%format (remember5 (content)) = "\remember{it5}{" content "}"
+%format (remember6 (content)) = "\remember{it6}{" content "}"
+%format (remember7 (content)) = "\remember{it7}{" content "}"
+%format (remember8 (content)) = "\remember{it8}{" content "}"
+%format (remember9 (content)) = "\remember{it9}{" content "}"
+%format (alert     (content)) = "\alert{"         content "}"
+%format (alert3    (content)) = "\alert<3>{"      content "}"
 %format ~> = "\mathinner\rightarrow"
 %format (CASES (a) (b) (c)) = "\left\{\begin{array}{@{}l@{}}" a "\cr\relax" b "\cr\relax" c "\end{array}\right."
 \begin{comment}
@@ -307,6 +336,14 @@ concatMap f as = concat (map f as)
 Nondeterminism
 \end{frame}
 
+\begin{frame}{Nondeterministic interpreter}
+\exercise{ArithNondet-1}
+\begin{spec}
+data Expr = ... | Amb Expr Expr
+\end{spec}
+\citep{mccarthy-basis}
+\end{frame}
+
 \begin{frame}{覆面算}
 \mathindent=0pt
 \begin{center}
@@ -318,76 +355,81 @@ Nondeterminism
            Z\textsuperscript{2} &&   MONEY &&   OUT
     \end{tabular}
 \end{center}
+\vspace{-2ex}
 \begin{overprint}
-\onslide<1>
+\onslide<-2>
 \begin{spec}
 concatMap :: (a -> [b]) -> [a] -> [b]
 
-concatMap  (\x -> concatMap  (\y -> concatMap  (\z ->  if square x + square y == square z
-                                                       then [(x,y,z)]
-                                                       else [])
-                                               [0..9])
-                             [0..9])
-           [0..9]
+remember0 concatMap  (\x -> remember2 concatMap  (\y -> remember4 concatMap  (\z ->  remember6 (!!! if square x + square y == square z)
+                                                                                     then [(x,y,z)] else [])
+                                                                             (remember5 [0..9]))
+                                                 (remember3 [0..9]))
+                     (remember1 [0..9])
 \end{spec}
-\onslide<2>
+\begin{tikzpicture}[remember picture, overlay]
+\only<2>{
+    \foreach \nw/\se/\ne in {it0/it1/it2,it2/it3/it4,it4/it5/it6}
+        \draw [alerted text.fg, transform canvas={xshift=-1pt,yshift=-1pt}]
+            (\nw.north -|| \ne.west) ++(-1pt,2pt)
+            -|| (\nw.west ||- \se.south)
+            -- (\se.south east) node [anchor=north east, inner sep=0] {好像一個命令}
+            -- ++(0,.8\baselineskip)
+            -|| cycle;
+}
+\end{tikzpicture}%
+\onslide<3-4>
 \begin{spec}
-type Digit = Int
-digit :: (Digit -> [Answer]) -> Answer
+concatMap :: (a -> [b]) -> [a] -> [b]
 
-digit (\x -> digit (\y -> digit (\z ->  if square x + square y == square z
-                                        then [(x,y,z)]
-                                        else [])))
+remember0 concatMap  (\d -> remember2 concatMap  (\e -> remember4 concatMap  (\y ->  remember6 (!!! if mod (d + e) 10 == y)
+                                                                                     then ... else [])
+                                                                             (remember5 (([0..9] \\ [d,e]))))
+                                                 (remember3 (([0..9] \\ [d]))))
+                     (remember1 [0..9])
 \end{spec}
-可以把每一個 loop body 想成一個 |Digit| 的 continuation\\
-所以「|digit (\x ->|」好像一個命令
-\onslide<3>
-\begin{spec}
-concatMap  (\d -> concatMap  (\e -> concatMap  (\y ->  if mod (d + e) 10 == y
-                                                       then ...
-                                                       else [])
-                                               ([0..9] \\ [d,e]))
-                             ([0..9] \\ [d]))
-           [0..9]
-\end{spec}
+\begin{tikzpicture}[remember picture, overlay]
+\only<4>{
+    \foreach \nw/\se/\ne in {it0/it1/it2,it2/it3/it4,it4/it5/it6}
+        \draw [alerted text.fg, transform canvas={xshift=-1pt,yshift=-1pt}]
+            (\nw.north -|| \ne.west) ++(-1pt,2pt)
+            -|| (\nw.west ||- \se.south)
+            -- (\se.south east) node [anchor=north east, inner sep=0] {好像一個命令}
+            -- ++(0,.8\baselineskip)
+            -|| cycle;
+}
+\end{tikzpicture}%
 趁早檢查，免得做白工
-\onslide<4>
-\begin{spec}
-type Chosen = [Digit]
-digit :: (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
-
-digit (\d -> digit (\e -> digit (\y ->  if mod (d + e) 10 == y
-                                        then ...
-                                        else ^^ \chosen -> [])))
-\end{spec}
-\exercise{Crypta-1}
 \onslide<5>
 \begin{spec}
-type Chosen = [(Char,Digit)]
-digit :: Char -> (Digit -> Chosen -> [Answer]) -> Chosen -> [Answer]
+type Digit = Int ^^^ type Chosen = [Digit] ^^^ -- \exercise{Crypta-1}
+digit :: alert Chosen -> [(Digit, alert Chosen)]
 
-add 'D' 'E' 'Y' ...
+concatMap  (\(d,chosen) ->
+             concatMap  (\(e,chosen) ->
+                          concatMap  (\(y,chosen) ->  if mod (d + e) 10 == y
+                                                      then ... else [])
+                                     (digit chosen))
+                        (digit chosen))
+           (digit chosen)
 \end{spec}
-\exercise{Crypta-2} 適合自資料檔讀取新題
-\end{overprint}
-\end{frame}
-
-\begin{frame}{Nondeterministic interpreter}
-\exercise{ArithNondet-1}
+\onslide<6>
 \begin{spec}
-data Expr = ... | Amb Expr Expr
+type Digit = Int ^^^ type Chosen = [(alert Char, Digit)] ^^^ -- \exercise{Crypta-2}
+digit :: alert Char -> Chosen -> [(Digit, Chosen)]
+
+concatMap  (\(carry,chosen) -> ...)
+           (add 'D' 'E' 'Y' ...)
 \end{spec}
-\citep{mccarthy-basis}
+適合自資料檔讀取新題
+\end{overprint}
 \end{frame}
 
 \section{Monad}
 
 \begin{frame}[t]{把副作用抽象成monad \hfill\mdseries\citep{moggi-abstract,wadler-monads}}
 \small\sethscode{tophscode}\hspace*{-9mm}%
-\begin{tikzpicture}[note/.style={rectangle callout, anchor=pointer,
-                                 draw=alerted text.fg,
-                                 fill=alerted text.bg,
-                                 text=alerted text.fg}]
+\begin{tikzpicture}[note/.style={rectangle callout, anchor=pointer, alerted}]
     \matrix [ampersand replacement=\&, anchor=base west, inner sep=0,
              column sep=.8em, row sep=2ex]
     {
@@ -895,8 +937,8 @@ main =  getChar >>= \c1 ->
 \end{spec}
 \tikz[remember picture,overlay]
     \node at (it.east)
-        [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer,
-         draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+        [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer, alerted]
+        {\texths\hscodestyle
 \begin{spec}
 (>>) :: (Monad m) => m a -> m b -> m b
 m >> n = m >>= \_ -> n
@@ -909,7 +951,10 @@ main =  getChar >>= \c1 ->
         putChar (toUpper c1) (remember (>>))
         putChar (toLower c1)
 \end{spec}
-\tikz[remember picture,overlay]\node at (it.east) [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer, draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+\tikz[remember picture,overlay]
+    \node at (it.east)
+        [rectangle callout, callout relative pointer={(-1em,0)}, anchor=pointer, alerted]
+        {\texths\hscodestyle
 \begin{spec}
 (>>) :: (Monad m) => m a -> m b -> m b
 m >> n = m >>= \_ -> n
@@ -963,8 +1008,8 @@ main =  do  c1 <- getChar
 \pause
 \tikz[remember picture, overlay]
     \node at (state int.south east)
-        [rectangle callout, callout relative pointer={(-2em,5em)}, anchor=pointer,
-         draw=alerted text.fg, fill=alerted text.bg, text=alerted text.fg] {\texths\hscodestyle
+        [rectangle callout, callout relative pointer={(-2em,5em)}, anchor=pointer, alerted]
+        {\texths\hscodestyle
 \begin{spec}
 import Control.Monad.Trans.State
 
@@ -1130,10 +1175,10 @@ newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{邊state邊exception}
+\begin{frame}[t]{邊state邊exception}
 \exercise{StateMaybe-1} $=$ \exercise{StateMaybe-2}
 \begin{itemize}
-\item |puzzle1|和|puzzle2|應該做什麼動作？
+\item |puzzle1|和|puzzle2|應該怎樣？
 \item 定義|newtype M a|並完成|instance Monad M|
 \item 提供|get|和|put|這兩個operation以便state動作
 \item 提供|divide|這個operation以便exception動作
@@ -1141,15 +1186,17 @@ newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{邊state邊nondeterminism}
+\begin{frame}[t]{邊state邊nondeterminism}
 \exercise{StateNondet-1} $=$ \exercise{StateNondet-2}
 \begin{itemize}
-\item |puzzle1|和|puzzle2|應該做什麼動作？
+\item |puzzle1|和|puzzle2|應該怎樣？
 \item 定義|newtype M a|並完成|instance Monad M|
 \item 提供|get|和|put|這兩個operation以便state動作
 \item 提供|amb|這個operation以便nondeterminism動作
 \item 找兩組不同的解法！
 \end{itemize}
+\exercise{Crypta-3}
+邁向logic programming \citep{fischer-purely-jfp}
 \end{frame}
 
 \begin{frame}{Monad transformers用用看}
@@ -1173,8 +1220,6 @@ newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
 
 
 
-
-\citep{fischer-purely-jfp}
 
 \subsection{Monad transformers}
 \exercise{StateIO-3}
