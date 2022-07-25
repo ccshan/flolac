@@ -1051,7 +1051,7 @@ choices   [2,3]    = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]]
 dec       [2,5,3]  = Just [1,4,2]
 dec       [2,0,3]  = Nothing
 \end{spec}
-再多找一些用處！
+再多找一些用途！
 \exercise{Traverse-1}
 \end{frame}
 
@@ -1070,7 +1070,7 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
 有什麼用呢？
 \exercise{Traverse-1}
 
-很多資料結構只要提供|traverse|就是用處很廣的API了。
+很多資料結構只要提供|traverse|就是用途很廣的API了。
 \end{frame}
 
 \begin{frame}{自己的迴圈自己寫}
@@ -1112,6 +1112,56 @@ return  :: a -> m a
 
 \section{組合副作用}
 
+\begin{frame}{邊state邊IO}
+\mathindent=0pt
+\begin{spec}
+newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
+\end{spec}
+\exercise{StateIO-1}
+\begin{itemize}
+\item 完成|instance Monad (StateIO s)|
+\item 新語法：|do|的中間是可以穿插|let|的
+\end{itemize}
+\exercise{StateIO-2}
+\begin{itemize}
+\item 提供|change|這個operation以便state動作
+\item 提供|lift|這個operation以便IO動作
+\item 新語法：|(+ n)|就是|\s -> s + n|的意思
+\end{itemize}
+\end{frame}
+
+\begin{frame}{邊state邊exception}
+\exercise{StateMaybe-1} $=$ \exercise{StateMaybe-2}
+\begin{itemize}
+\item |puzzle1|和|puzzle2|應該做什麼動作？
+\item 定義|newtype M a|並完成|instance Monad M|
+\item 提供|get|和|put|這兩個operation以便state動作
+\item 提供|divide|這個operation以便exception動作
+\item 找兩組不同的解法！
+\end{itemize}
+\end{frame}
+
+\begin{frame}{邊state邊nondeterminism}
+\exercise{StateNondet-1} $=$ \exercise{StateNondet-2}
+\begin{itemize}
+\item |puzzle1|和|puzzle2|應該做什麼動作？
+\item 定義|newtype M a|並完成|instance Monad M|
+\item 提供|get|和|put|這兩個operation以便state動作
+\item 提供|amb|這個operation以便nondeterminism動作
+\item 找兩組不同的解法！
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Monad transformers用用看}
+\dots
+\exercise{StateIO-3}
+\begin{itemize}
+\item 使用|Control.Monad.Trans.Class|裡共用的|lift|
+\item 使用|Control.Monad.Trans.State|裡共用的|modify|和|get|來定義|change|
+\end{itemize}
+\dots
+\end{frame}
+
 \begin{frame}[allowframebreaks=1]{References}
 \renewcommand\bibsection{}
 \renewcommand\bibfont{\hscodestyle\footnotesize}
@@ -1123,20 +1173,6 @@ return  :: a -> m a
 
 
 
-
-\section{Combining side effects}
-
-\subsection{State and IO}
-\exercise{StateIO-1}
-\exercise{StateIO-2}
-
-\subsection{State and exception}
-\exercise{StateMaybe-1}
-\exercise{StateMaybe-2}
-
-\subsection{State and nondeterminism}
-\exercise{StateNondet-1}
-\exercise{StateNondet-2}
 
 \citep{fischer-purely-jfp}
 
