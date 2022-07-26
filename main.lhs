@@ -830,7 +830,7 @@ class Show a where show :: a -> String ...
 \end{spec}
 \end{frame}
 
-\begin{frame}{|Monad|是一個type class}
+\begin{frame}{|Monad|是一個type class (constructor class) \hfill\mdseries\citep{jones-functional,jones-system-jfp}}
 \mathindent=0pt
 \begin{spec}
 class Monad m where
@@ -1248,15 +1248,123 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 邁向logic programming \citep{fischer-purely-jfp}
 \end{frame}
 
-\begin{frame}{Monad transformers用用看}
-\citep{liang-interpreter}
-\dots
+\begin{frame}{有無窮多種monad}
+\begin{center}
+\begin{tikzpicture}[>=stealth, x=4pc, y=2.75pc]
+    \begin{scope}[every node/.style={anchor=base}]
+        \node at ( 0, 0) (a) {|a|};
+        \node at ( 1, 1) {|Maybe a|};
+        \node at (-1, 1) {|[a]|};
+        \node at ( 1,-1) {|s -> (a, s)|};
+        \node at (-1,-1) {|IO a|};
+        \onslide<2->{
+        \node at ( 2, 0) {|s -> Maybe (a, s)|};
+        \node at (-2, 0) {|[IO a]|};
+        \node at ( 0, 2) {|[Maybe a]|};
+        \node at ( 0,-2) {|s -> IO (a, s)|};
+        \node at ( 2, 2) {|s -> (Maybe a, s)|};
+        \node at ( 2,-2) {|s -> IO (Maybe a, s)|};
+        \node at (-2, 2) {|s -> [(a, s)]|};
+        \node at (-2,-2) {|s -> (IO a, s)|};
+        }
+    \end{scope}
+    \alt<1>{\foreach \angle in {45,135,225,315}}{\foreach \angle in {15,45,...,345}}
+        \draw [->] (a) +(\angle:.8pc) -- ++(\angle:2.4pc);
+\end{tikzpicture}
+\end{center}
+\hfill\onslide<2->{哪兩個不行？}
+\end{frame}
+
+\begin{frame}
+Monad transformers \citep{liang-interpreter}
+\begin{itemize}
+\item 把任一個monad「|m|」加一層功能，變成另一個monad「|t m|」
+\item 例如|t = StateT Int, MaybeT, ...|\pause{| :: (Type -> Type) -> (Type -> Type)|}
+\item 不一定commutative
+\end{itemize}
+Monads
+\begin{itemize}
+\item 把任一個type「|a|」加上副作用，變成\\「產生|a|結果的computation/action」的type「|m a|」
+\item 例如|m = State Int, Maybe, [], IO, ... :: Type -> Type|
+\item 其他type constructors例如|(,), (->) :: Type -> Type -> Type|
+\end{itemize}
+Types
+\begin{itemize}
+\item 有value進駐(inhabit)的
+\item 例如|Int, Bool, Char, Int->Int->Bool, ... :: Type|
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Composing monad transformers}
+\mathindent=0pt
+\savecolumns
+\begin{spec}
+StateT :: Type -> (Type -> Type) -> (Type -> Type)
+
+StateT s m a        = s -> m (a, s)
+
+StateT Chosen [] a  = Chosen -> [(a, Chosen)]
+
+State s             = StateT s Identity
+
+Identity a          = a
+\end{spec}
+\vspace*{-1\belowdisplayskip-1\baselineskip}
+\begin{overprint}
+\onslide<2>
+\restorecolumns
+\begin{spec}
+MaybeT :: (Type -> Type) -> (Type -> Type)
+
+MaybeT m a          = m (Maybe a)
+
+StateT Chosen (MaybeT Identity) a  = ???
+
+MaybeT (StateT Chosen Identity) a  = ???
+\end{spec}
+\onslide<3>
+\begin{spec}
+newtype StateT s  m a = MkStateT  {runStateT  :: s -> m (a, s)}
+
+newtype MaybeT    m a = MkMaybeT  {runMaybeT  :: m (Maybe a)}
+
+class MonadTrans t where
+  lift :: (Monad m) => m a -> t m a
+\end{spec}
+\end{overprint}
+\end{frame}
+
+\begin{frame}[t]{Monad transformers用用看}
+\bigskip
+\begin{columns}[b]
+\begin{column}{.4\textwidth}
 \exercise{StateIO-3}
 \begin{itemize}
-\item 使用|Control.Monad.Trans.Class|裡共用的|lift|
-\item 使用|Control.Monad.Trans.State|裡共用的|modify|和|get|來定義|change|
+\item 使用共用的|lift|
+\item \makebox[0pt][l]{使用共用的|modify|和|get|來定義|change|}
 \end{itemize}
-\dots
+\exercise{StateMaybe-3}
+\begin{itemize}
+\item 使用共用的|empty|或|lift|\CJKecglue\mbox{來定義|divide|}
+\end{itemize}
+\exercise{StateMaybe-4}
+\begin{itemize}
+\item 使用共用的|lift|
+\item 使用共用的|empty|\CJKecglue\mbox{來定義|divide|}
+\end{itemize}
+\end{column}
+\begin{column}{.55\textwidth}
+\exercise{StateNondet-3}
+\begin{itemize}
+\item 使用共用的|empty|（或|lift|）以及|<||>|\CJKecglue\mbox{來定義|amb|}
+\end{itemize}
+\exercise{StateNondet-4}
+\begin{itemize}
+\item 使用共用的|lift|
+\item 使用共用的|empty|以及|<||>|\CJKecglue\mbox{來定義|amb|}
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[allowframebreaks=1]{References}
@@ -1271,23 +1379,11 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 
 
 
-\subsection{Monad transformers}
-\exercise{StateIO-3}
-\exercise{StateMaybe-3}
-\exercise{StateMaybe-4}
-\exercise{StateNondet-3}
-\exercise{StateNondet-4}
-\citep{liang-interpreter}
 
 \begin{spec}
-StateT s IO                    = s -> IO (a, s)
-
 StateT s Maybe a               = s -> Maybe (a, s)
 MaybeT (State s) a             = s -> (Maybe a, s)
 StateT s (MaybeT (State t)) a  = s -> t -> (Maybe (a, s), t)
-
-StateT s [] a                  = s -> [(a, s)]
-ListT (State s) a              = s -> ([a], s) -- for profiling search?
 \end{spec}
 Lifting operations is ad hoc
 

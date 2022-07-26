@@ -120,7 +120,7 @@ runM = runStateT
 amb :: [M a] -> M a
 amb []     =
 #ifdef SOLUTION
-             empty
+             empty -- or `lift []`
 #endif
 amb (m:ms) =
 #ifdef SOLUTION

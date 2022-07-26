@@ -4,7 +4,6 @@ import Test.QuickCheck (quickCheckAll)
 
 data Expr = Lit Int | Add Expr Expr | Mul Expr Expr | Div Expr Expr
   deriving (Eq, Show)
-type State = Int
 
 eval :: Expr -> Maybe Int
 -- ^Compute the result value of the given expression
