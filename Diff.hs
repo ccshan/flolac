@@ -11,10 +11,10 @@ import Control.Monad.Identity
 import Control.Monad.Trans.State
 import qualified Data.Map as M
 
-data Expr = Lit Double
+data Expr = Lit Float
           | Add Expr Expr
           | Mul Expr Expr
-          | Pow Expr Double
+          | Pow Expr Float
           | Exp Expr
           | Var Name
           | Let Name Expr Expr
@@ -45,7 +45,7 @@ sigmoid e = Add (Mul (Lit 2) (Pow (Add (Lit 1) (Exp (Mul (Lit (-1)) e)))
                                   (-1)))
                 (Lit (-1))
 
-eval :: (Monad m) => Expr -> M.Map Name Double -> m Double
+eval :: (Monad m) => Expr -> M.Map Name Float -> m Float
 prop_eval_Let                = runIdentity (eval (Let "x" (Add (Lit 3) (Lit (-1)))
                                                       (Mul (Var "x") (Var "x")))
                                                  M.empty)
@@ -59,7 +59,7 @@ prop_eval_sigmoid1 v     env = let sv = runIdentity (eval (sigmoid (Lit v)) env)
 prop_eval_sigmoid2 v1 v2 env = v1 < v2 ==>
                                let sv1 = runIdentity (eval (sigmoid (Lit v1)) env)
                                    sv2 = runIdentity (eval (sigmoid (Lit v2)) env)
-                               in sv1 < sv2 || sv1 == sv2 && (v2 - v1 < 0.1 || v2 < -30 || v1 > 30)
+                               in sv1 < sv2 || sv1 == sv2 && (v2 - v1 < 0.1 || v2 < -10 || v1 > 10)
 
 eval (Lit v)       _   = return v
 eval (Add e1 e2)   env = do v1 <- eval e1 env
@@ -108,7 +108,7 @@ prop_loss = freeVars loss
                                (repeat ()))
 
 #if STEP >= 2 && STEP <= 3
-eval2 :: (Monad m) => Expr -> M.Map Name (Double, Double) -> m (Double, Double)
+eval2 :: (Monad m) => Expr -> M.Map Name (Float, Float) -> m (Float, Float)
 prop_eval2 e         = let v0    = runIdentity (eval  e M.empty)
                            (v,_) = runIdentity (eval2 e M.empty)
                        in v0 == v || isNaN v0 && isNaN v
@@ -135,9 +135,9 @@ eval2 (Exp e)       env = do (v, u) <- eval2 e env
 #endif
 
 #if STEP == 4
-type Delta = M.Map Name Double
+type Delta = M.Map Name Float
 
-eval3 :: (Monad m) => Expr -> M.Map Name (Double, Delta) -> m (Double, Delta)
+eval3 :: (Monad m) => Expr -> M.Map Name (Float, Delta) -> m (Float, Delta)
 prop_eval3 e         = let v0    = runIdentity (eval  e M.empty)
                            (v,_) = runIdentity (eval3 e M.empty)
                        in v0 == v || isNaN v0 && isNaN v
@@ -165,14 +165,14 @@ eval3 (Exp e)       env = do (v, u) <- eval3 e env
 dAdd :: Delta -> Delta -> Delta
 dAdd = M.unionWith (+)
 
-dScale :: Double -> Delta -> Delta
+dScale :: Float -> Delta -> Delta
 dScale v = M.map (v *)
 #endif
 
 #if STEP == 5
 data Delta = Zero
            | DAdd Delta Delta
-           | DScale Double Delta
+           | DScale Float Delta
            | DVar DeltaId
            | DLet DeltaId Delta Delta
   deriving (Eq, Show)
@@ -184,7 +184,7 @@ data DeltaState = DeltaState Int DeltaBinds
 type DeltaBinds = [(DeltaId, Delta)] -- can be a mutable array that grows in |deltaLet|
 type M = State DeltaState
 
-eval4 :: Expr -> M.Map Name (Double, Delta) -> M (Double, Delta)
+eval4 :: Expr -> M.Map Name (Float, Delta) -> M (Float, Delta)
 prop_eval4     = runState (eval4 (Mul (Lit 2) (Var "x"))
                                   (M.singleton "x" (3, DVar (Name "dx"))))
                           (DeltaState 0 [])
@@ -226,7 +226,7 @@ deltaLet :: Delta -> M Delta
 deltaLet delta = state (\(DeltaState next deltas) ->
                           (DVar (Int next), DeltaState (next+1) ((Int next, delta) : deltas)))
 
-runDelta :: M (Double, Delta) -> (Double, Delta)
+runDelta :: M (Float, Delta) -> (Float, Delta)
 prop_runDelta = runDelta (eval4 (Let "y" (Mul (Lit 2) (Var "x"))
                                      (Add (Var "y") (Var "y")))
                                 (M.singleton "x" (3, DVar (Name "dx"))))
@@ -239,9 +239,9 @@ runDelta m = (res, foldl wrap delta binds)
   where ((res, delta), DeltaState _ binds) = runState m (DeltaState 0 [])
         wrap body (id, rhs)                = DLet id rhs body
 
-type DeltaMap = M.Map DeltaId Double -- can be a mutable array that shrinks in |evalDelta|
+type DeltaMap = M.Map DeltaId Float -- can be a mutable array that shrinks in |evalDelta|
 
-evalDelta :: Double -> Delta -> DeltaMap -> DeltaMap
+evalDelta :: Float -> Delta -> DeltaMap -> DeltaMap
 prop_evalDelta  = evalDelta 100
                             (DLet (Int 0) (DAdd (DScale 2 (DVar (Name "dx")))
                                                 (DScale 3 Zero))
@@ -272,7 +272,7 @@ evalDelta x (DLet uid u1 u2) um = let um2 = evalDelta x u2 um in
 #endif
 
 #if STEP == 2
-type Params = M.Map Name Double
+type Params = M.Map Name Float
 
 randomParams :: IO Params
 randomParams = traverse (\() -> getStdRandom (randomR (-2,2)))
@@ -280,7 +280,7 @@ randomParams = traverse (\() -> getStdRandom (randomR (-2,2)))
 #endif
 #if STEP >= 3
 type Params = M.Map Name Inertia
-data Inertia = Inertia Double Double
+data Inertia = Inertia Float Float
   deriving (Eq, Show)
 
 randomParams :: IO Params
@@ -297,7 +297,7 @@ randomParams = traverse _
 #if STEP == 2
 stepParams :: Params -> Params
 stepParams params =
-  let stepParam :: Name -> Double -> Double
+  let stepParam :: Name -> Float -> Float
       stepParam n v =
         let dualize nn vv = (vv, if n == nn then 1 else 0)
             newMomentum = - 0.1 * snd (runIdentity (eval2 loss (M.mapWithKey dualize params)))
@@ -332,7 +332,7 @@ stepParams :: Params -> Params
 stepParams params =
   let dualize n (Inertia v _) = (v, M.singleton n 1)
       grad = snd (runIdentity (eval3 loss (M.mapWithKey dualize params)))
-      stepParam :: Double -> Inertia -> Inertia
+      stepParam :: Float -> Inertia -> Inertia
       stepParam u (Inertia v oldMomentum) =
         let newMomentum = 0.9 * oldMomentum - 0.1 * u
         in Inertia (v + newMomentum) newMomentum
@@ -346,7 +346,7 @@ stepParams params =
   let dualize n (Inertia v _) = (v, DVar (Name n))
       (_, u) = runDelta (eval4 loss (M.mapWithKey dualize params))
       grad = M.mapKeysMonotonic (\(Name n) -> n) (evalDelta 1 u M.empty)
-      stepParam :: Double -> Inertia -> Inertia
+      stepParam :: Float -> Inertia -> Inertia
       stepParam u (Inertia v oldMomentum) =
         let newMomentum = 0.9 * oldMomentum - 0.1 * u
         in Inertia (v + newMomentum) newMomentum
@@ -367,7 +367,7 @@ optimize params = do
 #endif
 
 #if STEP >= 2
-showF :: Double -> String
+showF :: Float -> String
 showF v = showGFloat (Just 3) v ""
 #endif
 

@@ -29,7 +29,7 @@ cartesian :: [[a]] -> [[a]]
 prop_cartesian = cartesian ["hi","bye"] == ["hb","hy","he","ib","iy","ie"]
 cartesian = traverse id
 
-recips :: [Double] -> Maybe [Double]
+recips :: [Float] -> Maybe [Float]
 prop_recips1 = recips [1,5,2] == Just [1,0.2,0.5]
 prop_recips2 = recips [1,0,2] == Nothing
 recips = traverse (\x -> if x == 0 then Nothing else Just (1/x))
