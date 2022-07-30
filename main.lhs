@@ -1421,8 +1421,8 @@ type Dist = WriterT (Product Double) []
 \citep{claessen-quickcheck}
 
 \exercise{Diff-2}
-|randomParams perceptronLoss >>= optimize perceptronLoss|
-|randomParams networkLoss >>= optimize networkLoss|
+|randomParams perceptronLoss >>= iterateM_ (optimize 999 perceptronLoss)|
+|randomParams networkLoss >>= iterateM_ (optimize 999 networkLoss)|
 
 \exercise{Diff-3}
 \exercise{Diff-4}

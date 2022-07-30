@@ -3,6 +3,8 @@
 /main.tex
 /ln.tex
 /Linear
+/Perceptron
+/Network
 *.hi
 *.o
 *.dyn_hi

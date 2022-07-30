@@ -27,13 +27,16 @@ DIST = $(EXERCISES:%=dist/%)
 
 SOLUTIONS = $(EXERCISES:%=solutions/%)
 
-all: ln.pdf main.pdf $(SOLUTIONS) $(DIST)
+all: ln.pdf main.pdf $(SOLUTIONS) $(DIST) Linear Perceptron Network
+
+Linear Perceptron Network:: %: %.hs Graphics.hs Diff5.hs
+	ghc -O2 --make -o $@ $<
 
 push: $(DIST)
 	rclone sync --progress dist google:FLOLAC/2022/習題/monad
 
 clean:
-	rm -rf comment.cut preamble.tex $(foreach f,ln main,$(foreach ext,aux bbl blg log nav out ptb snm toc tex pdf,$(f).$(ext))) $(SOLUTIONS) $(DIST)
+	rm -rf comment.cut preamble.tex $(foreach f,ln main,$(foreach ext,aux bbl blg log nav out ptb snm toc tex pdf,$(f).$(ext))) $(SOLUTIONS) $(DIST) *.o *.hi *.dyn_o *.dyn_hi
 
 # Solution testing with %.in and %.out
 

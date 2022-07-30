@@ -1,14 +1,16 @@
 {-# OPTIONS -W #-}
 {-# LANGUAGE TemplateHaskell #-}
+module Diff/**/STEP where
 #if STEP == 1
 import Test.QuickCheck (quickCheckAll, (==>))
 #else
 import Test.QuickCheck (quickCheckAll, (==>), Arbitrary(arbitrary), frequency)
 import System.Random (randomRIO)
 import Numeric (showGFloat)
-#endif
-import Control.Monad.Identity
+import Control.Monad (liftM, liftM2, replicateM_)
 import Control.Monad.Trans.State
+#endif
+import Control.Monad.Identity (runIdentity)
 import qualified Data.Map as M
 
 data Expr = Lit Float
@@ -81,11 +83,14 @@ eval (Exp e)       env = do v <- eval e env
 sum_ :: [Expr] -> Expr
 sum_ = foldl Add (Lit 0)
 
-perceptron :: Expr -> (Expr, Expr) -> (Expr, Expr) -> Expr
-perceptron a0 (a1,x) (a2,y) = sigmoid (sum_ [a0, Mul a1 x, Mul a2 y])
+neuron :: Expr -> (Expr, Expr) -> (Expr, Expr) -> Expr
+neuron a0 (a1,x) (a2,y) = sigmoid (sum_ [a0, Mul a1 x, Mul a2 y])
+
+perceptron :: Expr
+perceptron = neuron (Var "a0") (Var "a1", Var "x") (Var "a2", Var "y")
 
 perceptronLoss :: Expr
-perceptronLoss = sum_ [ Pow (Add (perceptron (Var "a0") (Var "a1", Lit x) (Var "a2", Lit y))
+perceptronLoss = sum_ [ Pow (Add (Let "x" (Lit x) (Let "y" (Lit y) perceptron))
                                  (Lit (negate expect)))
                             2
                       | (x,y,expect) <- [ (-0.9, -0.9,  0.9)
@@ -97,9 +102,9 @@ prop_perceptronLoss = freeVars perceptronLoss
                       == M.fromList [("a0",()), ("a1",()), ("a2",())]
 
 network :: Expr
-network = Let "a" (perceptron (Var "a0") (Var "a1", Var "x") (Var "a2", Var "y"))
-              (Let "b" (perceptron (Var "b0") (Var "b1", Var "x") (Var "b2", Var "y"))
-                   (Let "c" (perceptron (Var "c0") (Var "c1", Var "a") (Var "c2", Var "b"))
+network = Let "a" (neuron (Var "a0") (Var "a1", Var "x") (Var "a2", Var "y"))
+              (Let "b" (neuron (Var "b0") (Var "b1", Var "x") (Var "b2", Var "y"))
+                   (Let "c" (neuron (Var "c0") (Var "c1", Var "a") (Var "c2", Var "b"))
                         (Var "c")))
 
 prop_network = freeVars network
@@ -307,81 +312,90 @@ randomParams loss = traverse _
 #endif
 
 #if STEP == 2
-stepParams :: Expr -> Params -> Params
+stepParams :: Expr -> Params -> (Float, Params)
 stepParams loss params =
   let stepParam :: Name -> Float -> Float
       stepParam n v =
         let dualize nn vv = (vv, if n == nn then 1 else 0)
             newMomentum = - 0.1 * snd (runIdentity (eval2 loss (M.mapWithKey dualize params)))
         in v + newMomentum
-  in M.mapWithKey stepParam params
+  in (runIdentity (eval loss params),
+      M.mapWithKey stepParam params)
 
-optimize :: Expr -> Params -> IO ()
-optimize loss params = do
+optimize :: Int -> Expr -> Params -> IO Params
+optimize skip loss params = do
+  let action = state (stepParams loss)
+      (l, params') = runState (replicateM_ skip action >> action) params
   mapM_ (\v -> putStr (showF v ++ " ")) params
-  putStrLn ("=> " ++ showF (runIdentity (eval loss params)))
-  optimize loss (iterate (stepParams loss) params !! 1000)
+  putStrLn ("=> " ++ showF l)
+  return params'
 #endif
 
 #if STEP == 3
-stepParams :: Expr -> Params -> Params
+stepParams :: Expr -> Params -> (Float, Params)
 stepParams loss params =
   let stepParam :: Name -> Inertia -> Inertia
       stepParam n (Inertia v oldMomentum) =
 #ifdef SOLUTION
         let dualize nn (Inertia vv _) = (vv, if n == nn then 1 else 0)
-            newMomentum = 0.9 * oldMomentum
+            newMomentum = 0.8 * oldMomentum
                         - 0.1 * snd (runIdentity (eval2 loss (M.mapWithKey dualize params)))
         in Inertia (v + newMomentum) newMomentum
 #else
         _
 #endif
-  in M.mapWithKey stepParam params
+  in (runIdentity (eval loss (M.map (\(Inertia v _) -> v) params)),
+      M.mapWithKey stepParam params)
 #endif
 
 #if STEP == 4
-stepParams :: Expr -> Params -> Params
+stepParams :: Expr -> Params -> (Float, Params)
 stepParams loss params =
   let dualize n (Inertia v _) = (v, M.singleton n 1)
-      grad = snd (runIdentity (eval3 loss (M.mapWithKey dualize params)))
+      (l, grad) = runIdentity (eval3 loss (M.mapWithKey dualize params))
       stepParam :: Float -> Inertia -> Inertia
       stepParam u (Inertia v oldMomentum) =
-        let newMomentum = 0.9 * oldMomentum - 0.1 * u
+        let newMomentum = 0.8 * oldMomentum - 0.1 * u
         in Inertia (v + newMomentum) newMomentum
-  in M.union (M.intersectionWith stepParam grad params)
-             (M.map (stepParam 0) (M.difference params grad))
+  in (l, M.union (M.intersectionWith stepParam grad params)
+                 (M.map (stepParam 0) (M.difference params grad)))
 #endif
 
 #if STEP == 5
-stepParams :: Expr -> Params -> Params
+stepParams :: Expr -> Params -> (Float, Params)
 stepParams loss params =
   let dualize n (Inertia v _) = (v, DVar (Name n))
-      (_, u) = runDelta (eval4 loss (M.mapWithKey dualize params))
+      (l, u) = runDelta (eval4 loss (M.mapWithKey dualize params))
       grad = M.mapKeysMonotonic (\(Name n) -> n) (evalDelta 1 u M.empty)
       stepParam :: Float -> Inertia -> Inertia
       stepParam u (Inertia v oldMomentum) =
-        let newMomentum = 0.9 * oldMomentum - 0.1 * u
+        let newMomentum = 0.8 * oldMomentum - 0.1 * u
         in Inertia (v + newMomentum) newMomentum
-  in M.union (M.intersectionWith stepParam grad params)
-             (M.map (stepParam 0) (M.difference params grad))
+  in (l, M.union (M.intersectionWith stepParam grad params)
+                 (M.map (stepParam 0) (M.difference params grad)))
 #endif
 
 #if STEP >= 3
-optimize :: Expr -> Params -> IO ()
-optimize loss params = do
+optimize :: Int -> Expr -> Params -> IO Params
+optimize skip loss params = do
+  let action = state (stepParams loss)
+      (l, params') = runState (replicateM_ skip action >> action) params
 #ifdef SOLUTION
-  params0 <- traverse (\(Inertia v _) -> putStr (showF v ++ " ") >> return v) params
-  putStrLn ("=> " ++ showF (runIdentity (eval loss params0)))
+  mapM_ (\(Inertia v _) -> putStr (showF v ++ " ")) params
 #else
-  _
+  mapM_ _ params
 #endif
-  optimize loss (iterate (stepParams loss) params !! 1000)
+  putStrLn ("=> " ++ showF l)
+  return params'
 #endif
 
 #if STEP >= 2
 showF :: Float -> String
 showF v = showGFloat (Just 3) v ""
 #endif
+
+iterateM_ :: (Monad m) => (a -> m a) -> (a -> m b)
+iterateM_ f x = f x >>= iterateM_ f
 
 return []
 main = $quickCheckAll >>= print

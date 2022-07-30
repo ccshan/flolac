@@ -1,10 +1,9 @@
 {-# OPTIONS -W #-}
 
-import Control.Monad (when)
 import Data.Maybe (catMaybes)
 import System.Random (randomRIO)
 import Numeric (showGFloat)
-import Graphics
+import Graphics (convert, thickLine, withKeyRepeat)
 import Graphics.Gloss
 import Graphics.Gloss.Geometry.Line (intersectSegLine)
 import Graphics.Gloss.Interface.IO.Game
@@ -17,7 +16,7 @@ ymax =  45
 size = 300
 
 convertPoint :: Point -> Point
-convertPoint (x,y) = (convert xmin 0 xmax size x,
+convertPoint (x,y) = (convert xmin (-size/2) xmax (size/2) x,
                       convert ymin (-size/2) ymax (size/2) y)
 
 drawLinear :: Linear -> Picture
@@ -36,12 +35,6 @@ drawLinearWithExamples :: [Point] -> Linear -> Picture
 drawLinearWithExamples ps l = Pictures
   $ [drawLinear l]
   ++ [uncurry translate (convertPoint p) (circleSolid 4) | p <- ps]
-
-draw :: Linear -> Picture
-draw l = Pictures
-  $ [drawLinearWithExamples examples l,
-     translate (-size) 0         (scale 0.2  0.2  (text (show l))),
-     translate (-size) (-size/2) (scale 0.15 0.15 (text (show (totalLoss l))))]
 
 data Linear = Linear {intercept, slope :: Float}
 
@@ -83,15 +76,18 @@ step l = let grad = gradTotalLoss l
 
 handle :: Event -> Linear -> IO Linear
 handle (EventKey k Down _ _) l = case k of
-  Char '1' -> return (Linear 20 1)
-  Char '2' -> return (Linear 10 2)
-  Char 'r' -> Linear <$> randomRIO (10,40) <*> randomRIO (0,1.4)
-  Char 'z' -> return l{intercept = intercept l - 0.1}
-  Char 'x' -> return l{intercept = intercept l + 0.1}
-  Char 'a' -> return l{slope     = slope     l - 0.1}
-  Char 's' -> return l{slope     = slope     l + 0.1}
-  SpecialKey KeySpace -> return (step l)
+  Char '1' -> set (Linear 20 1)
+  Char '2' -> set (Linear 10 2)
+  Char 'r' -> do i <- randomRIO (10,39)
+                 s <- randomRIO (0,1.4)
+                 set (Linear i s)
+  Char 'z' -> set l{intercept = intercept l - 1  }
+  Char 'x' -> set l{intercept = intercept l + 1  }
+  Char 'a' -> set l{slope     = slope     l - 0.1}
+  Char 's' -> set l{slope     = slope     l + 0.1}
+  SpecialKey KeySpace -> set (step l)
   _ -> return l
+  where set l = putStrLn (show l ++ " => " ++ show (totalLoss l)) >> return l
 handle _ l = return l
 
 edit :: Linear -> IO ()
@@ -99,7 +95,7 @@ edit l = withKeyRepeat 0.24 40 (playIO (InWindow "World" (round size, round size
                                        white)
                        0
                        l
-                       (return . draw)
+                       (return . drawLinearWithExamples examples)
                        handle
                        (const return)
 
