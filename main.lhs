@@ -1167,11 +1167,19 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
 很多資料結構只要提供|traverse|就是用途很廣的API了。
 \end{frame}
 
-\begin{frame}{自己的迴圈自己寫}
+\begin{frame}[t]{自己的迴圈自己寫}
 \exercise{Loops-1}
 \begin{enumerate}
 \item |forever action = action >> forever action| 型別為何？
 \item 用|forever|寫一個一直讀一行（用|getLine|）然後馬上寫出（用|putStrLn|）的程式。
+\item |iterateM_ f x = f x >>= iterateM_ f| 型別為何？
+\item 用|iterateM_|寫一個一直讀數字然後顯示累計總和的程式。
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[t]{自己的迴圈自己寫}
+\exercise{Loops-2}
+\begin{enumerate}
 \item 定義|replicateM_ :: (Monad m) => Int -> m a -> m ()|
       使得|replicateM_ n action|的意思是把|action|重複|n|遍。有什麼用？
 \item 定義|for :: (Monad m) => Int -> Int -> (Int -> m a) -> m ()|
