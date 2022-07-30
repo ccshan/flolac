@@ -1,4 +1,5 @@
 export PDFLATEX = xelatex
+export BIBTEX = bibtex -min-crossrefs=9999
 
 EXERCISES = \
 	Tree-1.hs \
