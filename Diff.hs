@@ -4,7 +4,7 @@
 import Test.QuickCheck (quickCheckAll, (==>))
 #else
 import Test.QuickCheck (quickCheckAll, (==>), Arbitrary(arbitrary), frequency)
-import System.Random (getStdRandom, randomR)
+import System.Random (randomRIO)
 import Numeric (showGFloat)
 #endif
 import Control.Monad.Identity
@@ -84,6 +84,18 @@ sum_ = foldl Add (Lit 0)
 perceptron :: Expr -> (Expr, Expr) -> (Expr, Expr) -> Expr
 perceptron a0 (a1,x) (a2,y) = sigmoid (sum_ [a0, Mul a1 x, Mul a2 y])
 
+perceptronLoss :: Expr
+perceptronLoss = sum_ [ Pow (Add (perceptron (Var "a0") (Var "a1", Lit x) (Var "a2", Lit y))
+                                 (Lit (negate expect)))
+                            2
+                      | (x,y,expect) <- [ (-0.9, -0.9,  0.9)
+                                        , (-0.9,  0.9,  0.9)
+                                        , ( 0.9, -0.9,  0.9)
+                                        , ( 0.9,  0.9, -0.9) ] ]
+
+prop_perceptronLoss = freeVars perceptronLoss
+                      == M.fromList [("a0",()), ("a1",()), ("a2",())]
+
 network :: Expr
 network = Let "a" (perceptron (Var "a0") (Var "a1", Var "x") (Var "a2", Var "y"))
               (Let "b" (perceptron (Var "b0") (Var "b1", Var "x") (Var "b2", Var "y"))
@@ -94,18 +106,18 @@ prop_network = freeVars network
                == M.fromList (zip ("x": "y": sequence ["abc","012"])
                                   (repeat ()))
 
-loss :: Expr
-loss = sum_ [ Pow (Add (Let "x" (Lit x) (Let "y" (Lit y) network))
-                       (Lit (negate expect)))
-                  2
-            | (x,y,expect) <- [ (-0.9, -0.9, -0.9)
-                              , (-0.9,  0.9,  0.9)
-                              , ( 0.9, -0.9,  0.9)
-                              , ( 0.9,  0.9, -0.9) ] ]
+networkLoss :: Expr
+networkLoss = sum_ [ Pow (Add (Let "x" (Lit x) (Let "y" (Lit y) network))
+                              (Lit (negate expect)))
+                         2
+                   | (x,y,expect) <- [ (-0.9, -0.9, -0.9)
+                                     , (-0.9,  0.9,  0.9)
+                                     , ( 0.9, -0.9,  0.9)
+                                     , ( 0.9,  0.9, -0.9) ] ]
 
-prop_loss = freeVars loss
-            == M.fromList (zip (sequence ["abc","012"])
-                               (repeat ()))
+prop_networkLoss = freeVars networkLoss
+                   == M.fromList (zip (sequence ["abc","012"])
+                                      (repeat ()))
 
 #if STEP >= 2 && STEP <= 3
 eval2 :: (Monad m) => Expr -> M.Map Name (Float, Float) -> m (Float, Float)
@@ -274,29 +286,29 @@ evalDelta x (DLet uid u1 u2) um = let um2 = evalDelta x u2 um in
 #if STEP == 2
 type Params = M.Map Name Float
 
-randomParams :: IO Params
-randomParams = traverse (\() -> getStdRandom (randomR (-2,2)))
-                        (freeVars loss)
+randomParams :: Expr -> IO Params
+randomParams loss = traverse (\() -> randomRIO (-2,2))
+                             (freeVars loss)
 #endif
 #if STEP >= 3
 type Params = M.Map Name Inertia
 data Inertia = Inertia Float Float
   deriving (Eq, Show)
 
-randomParams :: IO Params
+randomParams :: Expr -> IO Params
 #ifdef SOLUTION
-randomParams = traverse (\() -> do r <- getStdRandom (randomR (-2,2))
-                                   return (Inertia r 0))
-                        (freeVars loss)
+randomParams loss = traverse (\() -> do r <- randomRIO (-2,2)
+                                        return (Inertia r 0))
+                             (freeVars loss)
 #else
-randomParams = traverse _
-                        (freeVars loss)
+randomParams loss = traverse _
+                             (freeVars loss)
 #endif
 #endif
 
 #if STEP == 2
-stepParams :: Params -> Params
-stepParams params =
+stepParams :: Expr -> Params -> Params
+stepParams loss params =
   let stepParam :: Name -> Float -> Float
       stepParam n v =
         let dualize nn vv = (vv, if n == nn then 1 else 0)
@@ -304,16 +316,16 @@ stepParams params =
         in v + newMomentum
   in M.mapWithKey stepParam params
 
-optimize :: Params -> IO ()
-optimize params = do
+optimize :: Expr -> Params -> IO ()
+optimize loss params = do
   mapM_ (\v -> putStr (showF v ++ " ")) params
   putStrLn ("=> " ++ showF (runIdentity (eval loss params)))
-  optimize (iterate stepParams params !! 1000)
+  optimize loss (iterate (stepParams loss) params !! 1000)
 #endif
 
 #if STEP == 3
-stepParams :: Params -> Params
-stepParams params =
+stepParams :: Expr -> Params -> Params
+stepParams loss params =
   let stepParam :: Name -> Inertia -> Inertia
       stepParam n (Inertia v oldMomentum) =
 #ifdef SOLUTION
@@ -328,8 +340,8 @@ stepParams params =
 #endif
 
 #if STEP == 4
-stepParams :: Params -> Params
-stepParams params =
+stepParams :: Expr -> Params -> Params
+stepParams loss params =
   let dualize n (Inertia v _) = (v, M.singleton n 1)
       grad = snd (runIdentity (eval3 loss (M.mapWithKey dualize params)))
       stepParam :: Float -> Inertia -> Inertia
@@ -341,8 +353,8 @@ stepParams params =
 #endif
 
 #if STEP == 5
-stepParams :: Params -> Params
-stepParams params =
+stepParams :: Expr -> Params -> Params
+stepParams loss params =
   let dualize n (Inertia v _) = (v, DVar (Name n))
       (_, u) = runDelta (eval4 loss (M.mapWithKey dualize params))
       grad = M.mapKeysMonotonic (\(Name n) -> n) (evalDelta 1 u M.empty)
@@ -355,15 +367,15 @@ stepParams params =
 #endif
 
 #if STEP >= 3
-optimize :: Params -> IO ()
-optimize params = do
+optimize :: Expr -> Params -> IO ()
+optimize loss params = do
 #ifdef SOLUTION
   params0 <- traverse (\(Inertia v _) -> putStr (showF v ++ " ") >> return v) params
   putStrLn ("=> " ++ showF (runIdentity (eval loss params0)))
 #else
   _
 #endif
-  optimize (iterate stepParams params !! 1000)
+  optimize loss (iterate (stepParams loss) params !! 1000)
 #endif
 
 #if STEP >= 2
