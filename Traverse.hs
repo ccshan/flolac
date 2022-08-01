@@ -29,6 +29,10 @@ cartesian :: [[a]] -> [[a]]
 prop_cartesian = cartesian ["hi","bye"] == ["hb","hy","he","ib","iy","ie"]
 cartesian = traverse id
 
+sublist :: [a] -> [[a]]
+prop_sublist = sublist [1,2,3] == [[], [3], [2], [2,3], [1], [1,3], [1,2], [1,2,3]]
+sublist = map concat . traverse (\a -> [[], [a]])
+
 recips :: [Float] -> Maybe [Float]
 prop_recips1 = recips [1,5,2] == Just [1,0.2,0.5]
 prop_recips2 = recips [1,0,2] == Nothing
