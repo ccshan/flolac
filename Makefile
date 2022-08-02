@@ -2,27 +2,27 @@ export PDFLATEX = xelatex
 export BIBTEX = bibtex -min-crossrefs=9999
 
 EXERCISES = \
-	Tree-1.hs \
-	Arith-1.hs Arith-2.hs \
-	TreeState-1.hs TreeState-2.hs \
-	UnionFind-1.hs \
-	ArithState-1.hs ArithState-2.hs \
-	TreeMaybe-1.hs \
-	ArithMaybe-1.hs \
-	TreeNondet-1.hs \
-	ArithNondet-1.hs \
-	Crypta-1.hs Crypta-2.hs Crypta-3.hs \
-	Laws-1.hs \
-	ArithMonad-1.hs ArithMonad-2.hs ArithMonad-3.hs \
-	ArithIO-1.hs \
-	ArithDo-1.hs ArithDo-2.hs ArithDo-3.hs ArithDo-4.hs \
-	Traverse-1.hs \
-	Loops-1.hs Loops-2.hs \
-	Join-1.hs \
-	StateIO-1.hs StateIO-2.hs StateIO-3.hs \
-	StateMaybe-1.hs StateMaybe-2.hs StateMaybe-3.hs StateMaybe-4.hs \
-	StateNondet-1.hs StateNondet-2.hs StateNondet-3.hs StateNondet-4.hs \
-	Diff-1.hs Diff-2.hs Diff-3.hs Diff-4.hs Diff-5.hs
+	Tree1.hs \
+	Arith1.hs Arith2.hs \
+	TreeState1.hs TreeState2.hs \
+	UnionFind1.hs \
+	ArithState1.hs ArithState2.hs \
+	TreeMaybe1.hs \
+	ArithMaybe1.hs \
+	TreeNondet1.hs \
+	ArithNondet1.hs \
+	Crypta1.hs Crypta2.hs Crypta3.hs \
+	Laws1.hs \
+	ArithMonad1.hs ArithMonad2.hs ArithMonad3.hs \
+	ArithIO1.hs \
+	ArithDo1.hs ArithDo2.hs ArithDo3.hs ArithDo4.hs \
+	Traverse1.hs \
+	Loops1.hs Loops2.hs \
+	Join1.hs \
+	StateIO1.hs StateIO2.hs StateIO3.hs \
+	StateMaybe1.hs StateMaybe2.hs StateMaybe3.hs StateMaybe4.hs \
+	StateNondet1.hs StateNondet2.hs StateNondet3.hs StateNondet4.hs \
+	Diff1.hs Diff2.hs Diff3.hs Diff4.hs Diff5.hs
 
 DIST = $(EXERCISES:%=dist/%)
 
@@ -41,91 +41,91 @@ clean:
 
 # Solution testing with %.in and %.out
 
-solutions/%-1.hs: %.hs %.in %.out
+solutions/%1.hs: %.hs %.in %.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ < $(filter %.in,$^) | diff - $(filter %.out,$^)
 
-solutions/%-2.hs: %.hs %.in %.out
+solutions/%2.hs: %.hs %.in %.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ < $(filter %.in,$^) | diff - $(filter %.out,$^)
 
-solutions/%-3.hs: %.hs %.in %.out
+solutions/%3.hs: %.hs %.in %.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ < $(filter %.in,$^) | diff - $(filter %.out,$^)
 
 # Solution testing with %-STEP.out
 
-solutions/%-1.hs: %.hs %-1.out
+solutions/%1.hs: %.hs %1.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | diff - $(filter %.out,$^)
 
-solutions/%-2.hs: %.hs %-2.out
+solutions/%2.hs: %.hs %2.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | diff - $(filter %.out,$^)
 
-solutions/%-3.hs: %.hs %-3.out
+solutions/%3.hs: %.hs %3.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | diff - $(filter %.out,$^)
 
-solutions/%-4.hs: %.hs %-4.out
+solutions/%4.hs: %.hs %4.out
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | diff - $(filter %.out,$^)
 
 # Solution testing with just QuickCheck
 
-solutions/%-1.hs: %.hs
+solutions/%1.hs: %.hs
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | grep ^True$
 
-solutions/%-2.hs: %.hs
+solutions/%2.hs: %.hs
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | grep ^True$
 
-solutions/%-3.hs: %.hs
+solutions/%3.hs: %.hs
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | grep ^True$
 
-solutions/%-4.hs: %.hs
+solutions/%4.hs: %.hs
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | grep ^True$
 
-solutions/%-5.hs: %.hs
+solutions/%5.hs: %.hs
 	mkdir -p solutions
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) -DSOLUTION $< -o - | perl -00 -pe '' > $@
 	runhaskell $@ | grep ^True$
 
 # Solution masking
 
-dist/%-1.hs: %.hs
+dist/%1.hs: %.hs
 	mkdir -p dist
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
 
-dist/%-2.hs: %.hs
+dist/%2.hs: %.hs
 	mkdir -p dist
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
 
-dist/%-3.hs: %.hs
+dist/%3.hs: %.hs
 	mkdir -p dist
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
 
-dist/%-4.hs: %.hs
+dist/%4.hs: %.hs
 	mkdir -p dist
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
 
-dist/%-5.hs: %.hs
+dist/%5.hs: %.hs
 	mkdir -p dist
-	cpp -traditional-cpp -P -DSTEP=$(subst $*-,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
+	cpp -traditional-cpp -P -DSTEP=$(subst $*,,$(basename $(@F))) $< -o - | perl -00 -pe '' > $@
 
 # lhs2TeX
 

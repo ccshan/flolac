@@ -1,1 +1,1 @@
-solutions/Diff-5.hs
+solutions/Diff5.hs
