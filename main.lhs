@@ -1256,8 +1256,12 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 邁向logic programming \citep{fischer-purely-jfp}
 \end{frame}
 
-\begin{frame}[standout]
-Parsing
+\begin{frame}{Parsing \hfill\mdseries\citep{hutton-monadic-jfp}}
+\exercise{Parsing1}
+
+|parse (many1 number) "12345"|
+
+\exercise{Parsing2}
 \end{frame}
 
 \begin{frame}[standout]

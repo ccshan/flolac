@@ -22,6 +22,7 @@ EXERCISES = \
 	StateIO1.hs StateIO2.hs StateIO3.hs \
 	StateMaybe1.hs StateMaybe2.hs StateMaybe3.hs StateMaybe4.hs \
 	StateNondet1.hs StateNondet2.hs StateNondet3.hs StateNondet4.hs \
+	Parsing1.hs Parsing2.hs Parsing3.hs \
 	Diff1.hs Diff2.hs Diff3.hs Diff4.hs Diff5.hs
 
 DIST = $(EXERCISES:%=dist/%)
