@@ -131,16 +131,16 @@ main = return ()
 \maketitle
 
 \begin{frame}{暖身}
-純遞迴 \exercise{Tree-1}
+純遞迴 \exercise{Tree1}
 \begin{itemize}
     \item 型別→用途→範例→策略→定義→測試 \citep{felleisen-design}
     \item 先盡量把 |sumTree| 跟 |productTree| 寫得相似，\\
           然後才把它們抽象成更一般的、可重複利用的模組
 \end{itemize}
-解譯器 \exercise{Arith-1}
+解譯器 \exercise{Arith1}
 \begin{itemize}
     \item 隨機測試、property-based testing \citep{claessen-quickcheck}
-    \item 進階練習：定義變數 \exercise{Arith-2}
+    \item 進階練習：定義變數 \exercise{Arith2}
 \end{itemize}
 \end{frame}
 
@@ -159,7 +159,7 @@ sumTree (Branch t1 t2)  =  sumTree t1;
 \end{spec}
 如此處理 |Branch (Leaf 3) (Branch (Leaf 5) (Leaf 2))| 的方法是 |((0+3)+5)+2|\onslide<1>{ 還是 |3+(5+(2+0))| 還是 |3+(5+2)|？}
 
-\onslide<2>{\exercise{TreeState-1} 用 |sumTree'| 定義 |sumTree|}
+\onslide<2>{\exercise{TreeState1} 用 |sumTree'| 定義 |sumTree|}
 \end{frame}
 
 \begin{frame}{State threading}
@@ -170,7 +170,7 @@ relabel (Leaf _)        =  next := next + 1;
                            Leaf next
 relabel (Branch t1 t2)  =  Branch (relabel t1) (relabel t2)
 \end{spec}
-\exercise{TreeState-2}
+\exercise{TreeState2}
 用 |relabel'| 定義 |relabel|
 \begin{spec}
 seen := S.empty
@@ -188,7 +188,7 @@ unique (Branch t1 t2)  =  unique t1 && unique t2
 \end{frame}
 
 \begin{frame}{Local vs global state}
-\exercise{UnionFind-1}
+\exercise{UnionFind1}
 \hfill Pointers, references, file system
 
 \begin{tikzpicture}[>=stealth, trim left=-\mathindent,
@@ -271,9 +271,9 @@ testState'  = M.fromList
 \end{frame}
 
 \begin{frame}{State-threading interpreter}
-\exercise{ArithState-1}
+\exercise{ArithState1}
 
-進階練習：調撥記憶體 \exercise{ArithState-2}
+進階練習：調撥記憶體 \exercise{ArithState2}
 \mathindent=0pt
 \begin{spec}
 data Expr  =  Lit Int | Add Expr Expr | Mul Expr Expr
@@ -299,12 +299,12 @@ data Maybe     a = Nothing  | Just   a
 
 data Either b  a = Left b   | Right  a
 \end{spec}
-\exercise{TreeMaybe-1}
+\exercise{TreeMaybe1}
 \begin{itemize}
     \item |decTree| 碰到非正數是錯誤
     \item |productTree| 碰到零有捷徑
 \end{itemize}
-\exercise{ArithMaybe-1}
+\exercise{ArithMaybe1}
 \begin{itemize}
     \item 除以零是錯誤
 \end{itemize}
@@ -317,7 +317,7 @@ data Either b  a = Left b   | Right  a
 \[
     11, -1, 11\quad\rightarrow\quad\{-1,0,10,11,21\}
 \]
-\exercise{TreeNondet-1}
+\exercise{TreeNondet1}
 \begin{spec}
 blackjack' :: Tree -> Int -> [Int]
 blackjack' (Leaf n)        total  =  if total + n > 21 then total
@@ -337,7 +337,7 @@ Nondeterminism
 \end{frame}
 
 \begin{frame}{Nondeterministic interpreter}
-\exercise{ArithNondet-1}
+\exercise{ArithNondet1}
 \begin{spec}
 data Expr = ... | Amb Expr Expr
 \end{spec}
@@ -402,7 +402,7 @@ remember0 concatMap  (\d -> remember2 concatMap  (\e -> remember4 concatMap  (\y
 趁早檢查，免得做白工
 \onslide<5>
 \begin{spec}
-type Digit = Int ^^^ type Chosen = [Digit] ^^^ -- \exercise{Crypta-1}
+type Digit = Int ^^^ type Chosen = [Digit] ^^^ -- \exercise{Crypta1}
 digit :: alert Chosen -> [(Digit, alert Chosen)]
 
 concatMap  (\(d,chosen) ->
@@ -415,7 +415,7 @@ concatMap  (\(d,chosen) ->
 \end{spec}
 \onslide<6>
 \begin{spec}
-type Digit = Int ^^^ type Chosen = [(alert Char, Digit)] ^^^ -- \exercise{Crypta-2}
+type Digit = Int ^^^ type Chosen = [(alert Char, Digit)] ^^^ -- \exercise{Crypta2}
 digit :: alert Char -> Chosen -> [(Digit, Chosen)]
 
 concatMap  (\(carry,chosen) -> ...)
@@ -639,7 +639,7 @@ m >>= \a -> (k a >>= l)  = (m >>= k) >>= l
 \vspace*{-\belowdisplayskip}
 \begin{overprint}
 \onslide<1>
-檢查具體特例。\hfill\exercise{Laws-1}\hfill
+檢查具體特例。\hfill\exercise{Laws1}\hfill
 用|Int|以外的型別呢？|[]|以外的monad呢？
 \begin{spec}
 type M a = [a]
@@ -890,17 +890,17 @@ instance Applicative (State s) where pure = return; (<*>) = ap
 \end{frame}
 
 \begin{frame}{來寫範例吧！}
-\exercise{ArithMonad-1}
+\exercise{ArithMonad1}
 
-\exercise{ArithMonad-2}
+\exercise{ArithMonad2}
 
-\exercise{ArithMonad-3}
+\exercise{ArithMonad3}
 \end{frame}
 
 \section{Imperative programming}
 
 \begin{frame}{I/O}
-\exercise{ArithIO-1}
+\exercise{ArithIO1}
 「輸入」、「輸出」是什麼意思呢？
 
 適合用什麼monad來表達呢？
@@ -1047,10 +1047,10 @@ main =  do  c1 <- getChar
 \toprule
 把這個interpreter\dots & 用這個monad\dots & 在這裡寫成do notation: \\
 \midrule
-\exercise{ArithMonad-1} &\remember{state int}{|State Int|} &$\rightarrow$ \exercise{ArithDo-1}\\
-\exercise{ArithMonad-2} &                     |Maybe|      &$\rightarrow$ \exercise{ArithDo-2}\\
-\exercise{ArithMonad-3} &                     |[]|         &$\rightarrow$ \exercise{ArithDo-3}\\
-\exercise{ArithIO-1}    &                     |IO|         &$\rightarrow$ \exercise{ArithDo-4}\\
+\exercise{ArithMonad1} &\remember{state int}{|State Int|} &$\rightarrow$ \exercise{ArithDo1}\\
+\exercise{ArithMonad2} &                     |Maybe|      &$\rightarrow$ \exercise{ArithDo2}\\
+\exercise{ArithMonad3} &                     |[]|         &$\rightarrow$ \exercise{ArithDo3}\\
+\exercise{ArithIO1}    &                     |IO|         &$\rightarrow$ \exercise{ArithDo4}\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1146,7 +1146,7 @@ dec       [2,5,3]  = Just [1,4,2]
 dec       [2,0,3]  = Nothing
 \end{spec}
 再多找一些用途！
-\exercise{Traverse-1}
+\exercise{Traverse1}
 \end{frame}
 
 \begin{frame}{單一程式可以應用於各種monad}
@@ -1162,13 +1162,13 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
                                      return (Branch t1' t2')
 \end{spec}
 有什麼用呢？
-\exercise{Traverse-1}
+\exercise{Traverse1}
 
 很多資料結構只要提供|traverse|就是用途很廣的API了。
 \end{frame}
 
 \begin{frame}[t]{自己的迴圈自己寫}
-\exercise{Loops-1}
+\exercise{Loops1}
 \begin{enumerate}
 \item |forever action = action >> forever action| 型別為何？
 \item 用|forever|寫一個一直讀一行（用|getLine|）然後馬上寫出（用|putStrLn|）的程式。
@@ -1178,7 +1178,7 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
 \end{frame}
 
 \begin{frame}[t]{自己的迴圈自己寫}
-\exercise{Loops-2}
+\exercise{Loops2}
 \begin{enumerate}
 \item 定義|replicateM_ :: (Monad m) => Int -> m a -> m ()|
       使得|replicateM_ n action|的意思是把|action|重複|n|遍。有什麼用？
@@ -1190,7 +1190,7 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
 \end{frame}
 
 \begin{frame}{兩種monad的定義可以互相轉換}
-\exercise{Join-1}
+\exercise{Join1}
 \begin{center}
 \begin{tikzpicture}[>=stealth]
     \node (old) at (0,3) [anchor=west] {\texths\hscodestyle
@@ -1219,12 +1219,12 @@ return  :: a -> m a
 \begin{spec}
 newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{spec}
-\exercise{StateIO-1}
+\exercise{StateIO1}
 \begin{itemize}
 \item 完成|instance Monad (StateIO s)|
 \item 新語法：|do|的中間是可以穿插|let|的
 \end{itemize}
-\exercise{StateIO-2}
+\exercise{StateIO2}
 \begin{itemize}
 \item 提供|change|這個operation以便state動作
 \item 提供|lift|這個operation以便IO動作
@@ -1233,7 +1233,7 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{frame}
 
 \begin{frame}[t]{邊state邊exception}
-\exercise{StateMaybe-1} $=$ \exercise{StateMaybe-2}
+\exercise{StateMaybe1} $=$ \exercise{StateMaybe2}
 \begin{itemize}
 \item |puzzle1|和|puzzle2|應該怎樣？
 \item 定義|newtype M a|並完成|instance Monad M|
@@ -1244,7 +1244,7 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{frame}
 
 \begin{frame}[t]{邊state邊nondeterminism}
-\exercise{StateNondet-1} $=$ \exercise{StateNondet-2}
+\exercise{StateNondet1} $=$ \exercise{StateNondet2}
 \begin{itemize}
 \item |puzzle1|和|puzzle2|應該怎樣？
 \item 定義|newtype M a|並完成|instance Monad M|
@@ -1252,8 +1252,16 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \item 提供|amb|這個operation以便nondeterminism動作
 \item 找兩組不同的解法！
 \end{itemize}
-\exercise{Crypta-3}
+\exercise{Crypta3}
 邁向logic programming \citep{fischer-purely-jfp}
+\end{frame}
+
+\begin{frame}[standout]
+Parsing
+\end{frame}
+
+\begin{frame}[standout]
+Probability
 \end{frame}
 
 \begin{frame}{有無窮多種monad}
@@ -1346,27 +1354,27 @@ class MonadTrans t where
 \bigskip
 \begin{columns}[b]
 \begin{column}{.4\textwidth}
-\exercise{StateIO-3}
+\exercise{StateIO3}
 \begin{itemize}
 \item 使用共用的|lift|
 \item \makebox[0pt][l]{使用共用的|modify|和|get|來定義|change|}
 \end{itemize}
-\exercise{StateMaybe-3}
+\exercise{StateMaybe3}
 \begin{itemize}
 \item 使用共用的|empty|或|lift|\CJKecglue\mbox{來定義|divide|}
 \end{itemize}
-\exercise{StateMaybe-4}
+\exercise{StateMaybe4}
 \begin{itemize}
 \item 使用共用的|lift|
 \item 使用共用的|empty|\CJKecglue\mbox{來定義|divide|}
 \end{itemize}
 \end{column}
 \begin{column}{.55\textwidth}
-\exercise{StateNondet-3}
+\exercise{StateNondet3}
 \begin{itemize}
 \item 使用共用的|empty|（或|lift|）以及|<||>|\CJKecglue\mbox{來定義|amb|}
 \end{itemize}
-\exercise{StateNondet-4}
+\exercise{StateNondet4}
 \begin{itemize}
 \item 使用共用的|lift|
 \item 使用共用的|empty|以及|<||>|\CJKecglue\mbox{來定義|amb|}
@@ -1417,13 +1425,13 @@ type Dist = WriterT (Product Double) []
 \section{Automatic differentiation}
 \citep{krawiec-provably}
 
-\exercise{Diff-1}
+\exercise{Diff1}
 \citep{claessen-quickcheck}
 
-\exercise{Diff-2}
+\exercise{Diff2}
 |randomParams perceptronLoss >>= iterateM_ (optimize 999 perceptronLoss)|
 |randomParams networkLoss >>= iterateM_ (optimize 999 networkLoss)|
 
-\exercise{Diff-3}
-\exercise{Diff-4}
-\exercise{Diff-5}
+\exercise{Diff3}
+\exercise{Diff4}
+\exercise{Diff5}
