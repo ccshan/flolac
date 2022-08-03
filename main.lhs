@@ -1257,11 +1257,25 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 \end{frame}
 
 \begin{frame}{Parsing \hfill\mdseries\citep{hutton-monadic-jfp}}
-\exercise{Parsing1}
+|type Parser a = String -> [(a, String)]|\hfill
+\smash[b]{\usebeamercolor[fg]{block body}\fboxsep=1.5ex\colorbox{bg}{\begin{tabular}[t]{@@{}l@@{}}
+    \makebox[0pt][r]{``}A parser for things\\
+    is a function from strings\\
+    to lists of pairs\\
+    of things and strings.''
+\end{tabular}}}
 
 |parse (many1 number) "12345"|
 
+\bigskip
+\exercise{Parsing1}
+寫|Tree|的parser
+
 \exercise{Parsing2}
+寫|sepby1|這個把「某種項目的parser」以及「某種隔間的parser」組合成為「一串項目的parser」的parser combinator
+
+\exercise{Parsing3}
+把|expr|這個parser加上減法的syntactic sugar
 \end{frame}
 
 \begin{frame}[standout]
