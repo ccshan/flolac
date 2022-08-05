@@ -1273,17 +1273,30 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 
 \bigskip
 \exercise{Parsing1}
-寫|Tree|的parser
+把|tree|這個|Tree|的parser寫完
 
 \exercise{Parsing2}
-寫|sepby1|這個把「某種項目的parser」以及「某種隔間的parser」組合成為「一串項目的parser」的parser combinator
+寫一個parser combinator把「某種項目的parser」以及「某種隔間的parser」組合成為「一串項目的parser」，叫做|sepby1|
 
 \exercise{Parsing3}
 把|expr|這個parser加上減法的syntactic sugar
 \end{frame}
 
-\begin{frame}[standout]
-Probability
+\begin{frame}{Probability}
+|type Prob a = [(a, Float)]|
+
+\bigskip
+\exercise{Prob1}
+定義|die|擲骰子
+
+\exercise{Prob2}
+用|M|（也就是|Data.Map|模組）裡的|M.toList|以及|M.fromListWith|定義|coalesce|
+
+\exercise{Prob3}
+在|countL|或|countR|內部呼叫|coalesce|，使得|coalesce (countL 100 0.5)|或|coalesce (countR 100 0.5)|變得很快
+
+\exercise{Prob4}
+不僅用|coalesce|，也得用|let|或|where|，使得|coalesce (countL 100 0.5)|和|coalesce (countR 100 0.5)|\textbf{都}很快
 \end{frame}
 
 \begin{frame}{有無窮多種monad}
