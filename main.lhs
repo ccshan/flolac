@@ -141,6 +141,7 @@ main = return ()
 \begin{itemize}
     \item 隨機測試、property-based testing \citep{claessen-quickcheck}
     \item 進階練習：定義變數 \exercise{Arith2}
+    \item 進階練習：用|Expr|的fold表達|eval|
 \end{itemize}
 \end{frame}
 
@@ -1039,6 +1040,7 @@ main =  do  c1 <- getChar
             putChar (toLower c1)
 \end{spec}
 \end{overprint}
+\hfill \onslide<2>{有哪些labeled transition sequences?}
 \end{frame}
 
 \begin{frame}[t]{Do notation用用看}
@@ -1174,6 +1176,8 @@ traverseTree f (Branch t1 t2)  = do  t1' <- traverseTree f t1
 \item 用|forever|寫一個一直讀一行（用|getLine|）然後馬上寫出（用|putStrLn|）的程式。
 \item |iterateM_ f x = f x >>= iterateM_ f| 型別為何？
 \item 用|iterateM_|寫一個一直讀數字然後顯示累計總和的程式。
+\item |forever (getChar >>= putChar)|有哪些labeled transition sequences?
+\item |iterateM_ (\c -> putChar c >> getChar) 'X'|有哪些labeled transition sequences?
 \end{enumerate}
 \end{frame}
 
