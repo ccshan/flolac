@@ -28,6 +28,8 @@ EXERCISES = \
 
 DIST = $(EXERCISES:%=dist/%)
 
+EXTRAS = Linear.hs Perceptron.hs Network.hs Graphics.hs main.pdf
+
 SOLUTIONS = $(EXERCISES:%=solutions/%)
 
 all: ln.pdf main.pdf $(SOLUTIONS) $(DIST) Linear Perceptron Network
@@ -35,8 +37,10 @@ all: ln.pdf main.pdf $(SOLUTIONS) $(DIST) Linear Perceptron Network
 Linear Perceptron Network:: %: %.hs Graphics.hs Diff5.hs
 	ghc -O2 --make -o $@ $<
 
-push: $(DIST)
+push: $(EXTRAS) $(DIST) $(SOLUTIONS)
+	cp -f $(EXTRAS) dist/
 	rclone sync --progress dist google:FLOLAC/2022/習題/monad
+	rclone sync --progress solutions google:FLOLAC/2022/習題/monad-solutions
 
 clean:
 	rm -rf comment.cut preamble.tex $(foreach f,ln main,$(foreach ext,aux bbl blg log nav out ptb snm toc tex pdf,$(f).$(ext))) $(SOLUTIONS) $(DIST) *.o *.hi *.dyn_o *.dyn_hi

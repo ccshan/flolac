@@ -20,6 +20,7 @@
 \usepackage{mathtools}
 \usepackage{prooftree1}
 \usepackage{booktabs}
+\usepackage{qrcode}
 
 \usepackage{natbib}
 \citestyle{acmauthoryear}
@@ -128,7 +129,20 @@ main = return ()
 \author{單中杰}
 \begin{document}
 
-\maketitle
+\begin{frame}[standout]{\inserttitle\hfill\insertauthor\ \insertdate}
+    \noindent
+    \includegraphics[height=.6\paperheight]{wallace}\hfill
+    \raisebox{\depth}{\qrcode[height=.6\paperheight]{https://drive.google.com/drive/folders/1oju5XL5sAlKe4n6T6dXfYpU1a1meVt6t?usp=sharing}}
+
+    \scriptsize\mdseries
+    \medskip
+
+    \noindent
+    \url{https://drive.google.com/drive/folders/1oju5XL5sAlKe4n6T6dXfYpU1a1meVt6t?usp=sharing}
+
+    \noindent
+    \url{https://drive.google.com/drive/folders/1qRhU05xbDVoXqgYLUuBbGYcFavCPDdgy?usp=sharing}
+\end{frame}
 
 \begin{frame}{暖身}
 純遞迴 \exercise{Tree1}
