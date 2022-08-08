@@ -18,9 +18,11 @@
 \usepackage{calc}
 \usepackage{comment}
 \usepackage{mathtools}
-\usepackage{prooftree1}
 \usepackage{booktabs}
 \usepackage{qrcode}
+
+\usepackage{prooftree1}
+\proofrulebaseline=1.7ex
 
 \usepackage{natbib}
 \citestyle{acmauthoryear}
@@ -950,11 +952,11 @@ int main() {
 \begin{proofrules}
 \advance \leftskip -5mm
 \advance \rightskip -5mm
-\[ \justifies \{\mathbb{E}[|putChar c        |]\} \xrightarrow{!|c|} \{\mathbb{E}[|return ()|]\} \using \text{PUTC} \]
-\[ \justifies \{\mathbb{E}[|getChar          |]\} \xrightarrow{?|c|} \{\mathbb{E}[|return c |]\} \using \text{GETC} \]
-\[ \justifies \{\mathbb{E}[|return|\:N|>>=|M\,]\} \rightarrow        \{\mathbb{E}[M\;N     \,]\} \using \text{LUNIT} \]
+\[ \justifies \{\mathbb{E}[|putChar c        |]\} \xrightarrow{\smash!|c|} \{\mathbb{E}[|return ()|]\} \using \text{PUTC} \]
+\[ \justifies \{\mathbb{E}[|getChar          |]\} \xrightarrow{\smash?|c|} \{\mathbb{E}[|return c |]\} \using \text{GETC} \]
+\[ \justifies \{\mathbb{E}[|return|\:N|>>=|M\,]\} \rightarrow              \{\mathbb{E}[M\;N     \,]\} \using \text{LUNIT} \]
 \[ \llbracket M\,\rrbracket = \llbracket V\,\rrbracket \quad M \nequiv V
-   \justifies \{\mathbb{E}[M                \,]\} \rightarrow        \{\mathbb{E}[V        \,]\} \using \text{FUN} \]
+   \justifies \{\mathbb{E}[M                \,]\} \rightarrow              \{\mathbb{E}[V        \,]\} \using \text{FUN} \]
 \end{proofrules}
 \medskip
 \end{overprint}
@@ -975,6 +977,7 @@ int main() {
     \rightarrow                  & \{|putChar 'W'                             |\} & \text{(FUN)}   \\
     \smash{\xrightarrow{!|'W'|}} & \{|return ()                               |\} & \text{(PUTC)}
 \end{array}\]
+\onslide<4->{為何滿足preservation? progress?}
 \end{frame}
 
 \begin{frame}{Do notation}
@@ -1296,7 +1299,7 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 把|expr|這個parser加上減法的syntactic sugar
 \end{frame}
 
-\begin{frame}{Probability}
+\begin{frame}{Probability \hfill\mdseries\citep{ramsey-stochastic}}
 |type Prob a = [(a, Float)]|
 
 \bigskip
@@ -1311,6 +1314,32 @@ newtype StateIO s a = MkStateIO {runStateIO :: s -> IO (a, s)}
 
 \exercise{Prob4}
 不僅用|coalesce|，也得用|let|或|where|，使得|coalesce (countL 100 0.5)|和|coalesce (countR 100 0.5)|\textbf{都}很快
+\end{frame}
+
+\begin{frame}{Conditional probability \hfill\mdseries\citep{shan-exact}}
+\begin{equation*}
+    \mathbb{P}(A, B)
+    \quad=\quad
+    \begin{array}[t]{@@{}l@@{~}l@@{}}
+        |do| & a \leftarrow \mathbb{P}(A) \\
+             & b \leftarrow \mathbb{P}(B \mid A=a) \\
+             & |return (a,b)|
+    \end{array}
+    \quad=\quad
+    \begin{array}[t]{@@{}l@@{~}l@@{}}
+        |do| & b \leftarrow \mathbb{P}(B) \\
+             & a \leftarrow \mathbb{P}(A \mid B=b) \\
+             & |return (a,b)|
+    \end{array}
+\end{equation*}
+
+\bigskip
+\exercise{Prob5}
+丟一枚一元銅板、一枚五元銅板。
+\begin{enumerate}
+\item 看到頭像的機率為何？\\若看到頭像，則一元銅板是頭像的機率為何？
+\item 沒有頭像的機率為何？\\若沒有頭像，則一元銅板是頭像的機率為何？
+\end{enumerate}
 \end{frame}
 
 \begin{frame}{有無窮多種monad}

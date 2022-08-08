@@ -23,7 +23,7 @@ EXERCISES = \
 	StateMaybe1.hs StateMaybe2.hs StateMaybe3.hs StateMaybe4.hs \
 	StateNondet1.hs StateNondet2.hs StateNondet3.hs StateNondet4.hs \
 	Parsing1.hs Parsing2.hs Parsing3.hs \
-	Prob1.hs Prob2.hs Prob3.hs Prob4.hs \
+	Prob1.hs Prob2.hs Prob3.hs Prob4.hs Prob5.hs \
 	Diff1.hs Diff2.hs Diff3.hs Diff4.hs Diff5.hs
 
 DIST = $(EXERCISES:%=dist/%)
