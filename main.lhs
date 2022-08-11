@@ -1395,13 +1395,15 @@ Types
 \begin{spec}
 StateT :: Type -> (Type -> Type) -> (Type -> Type)
 
-StateT s m a        = s -> m (a, s)
+StateT s m a         = s -> m (a, s)
 
-StateT Chosen [] a  = Chosen -> [(a, Chosen)]
+StateT S IO s        = s -> IO (a, s)
 
-State s             = StateT s Identity
+StateT s [] a        = s -> [(a, s)]
 
-Identity a          = a
+StateT s Identity a  = s -> (a, s)
+
+Identity a           = a
 \end{spec}
 \vspace*{-1\belowdisplayskip-1\baselineskip}
 \begin{overprint}
@@ -1410,11 +1412,11 @@ Identity a          = a
 \begin{spec}
 MaybeT :: (Type -> Type) -> (Type -> Type)
 
-MaybeT m a          = m (Maybe a)
+MaybeT m a           = m (Maybe a)
 
-StateT Chosen (MaybeT Identity) a  = ???
+StateT s (MaybeT Identity) a  = ???
 
-MaybeT (StateT Chosen Identity) a  = ???
+MaybeT (StateT s Identity) a  = ???
 \end{spec}
 \onslide<3>
 \begin{spec}
@@ -1461,6 +1463,40 @@ class MonadTrans t where
 \end{columns}
 \end{frame}
 
+\section{自動微分}
+
+\begin{frame}{機器學習}
+學習 \texttt{Linear.hs} →
+
+學習一個神經元 \texttt{Perceptron.hs} →
+
+學習神經網路 \texttt{Network.hs}
+
+\bigskip
+為了自動調整參數們，所以需要把loss相對於參數們微分
+\end{frame}
+
+\begin{frame}[allowframebreaks=1]{自動微分 \hfill\mdseries\citep{krawiec-provably}}
+\begin{enumerate}
+\item 把loss表達為|Expr|，其中每個參數是一個|Var| \\
+      \exercise{Diff1} 把|eval|寫完，增加|Pow|與|Exp|的cases
+\item 用dual number進行forward automatic differentiation \\
+      （為每個參數都得重跑一遍） \\
+      用|instance Arbitrary Expr|產生隨機|Expr|用來測試 \citep{claessen-quickcheck} \\
+      用|traverse|產生隨機|Params|用來起始學習過程 \\
+      {\footnotesize|randomParams perceptronLoss >>= iterateM_ (optimize 999 perceptronLoss)|} \\
+      {\footnotesize|randomParams networkLoss >>= iterateM_ (optimize 999 networkLoss)|} \\
+      \exercise{Diff2} 把|eval2|寫完，增加|Pow|與|Exp|的cases
+\item 增加慣性(|Inertia|)加速學習 \\
+      \exercise{Diff3} 把|randomParams, stepParams, optimize|裡處裡慣性的部份寫完
+\item 一次對所有參數微分：|(Float, Delta) = (Float, M.Map Name Float)| \\
+      \exercise{Diff4} 用|dScale|把|eval3|寫完，增加|Pow|與|Exp|的cases
+\item 把|Delta|用一個有|DLet|的語法樹表示\\
+      用state monad以preserve sharing!\\
+      \exercise{Diff5} 用|deltaLet|和|DScale|把|eval4|寫完，增加|Pow|與|Exp|的cases
+\end{enumerate}
+\end{frame}
+
 \begin{frame}[allowframebreaks=1]{References}
 \renewcommand\bibsection{}
 \renewcommand\bibfont{\hscodestyle\footnotesize}
@@ -1468,48 +1504,3 @@ class MonadTrans t where
 \end{frame}
 
 \end{document}
-
-
-
-
-
-
-\begin{spec}
-StateT s Maybe a               = s -> Maybe (a, s)
-MaybeT (State s) a             = s -> (Maybe a, s)
-StateT s (MaybeT (State t)) a  = s -> t -> (Maybe (a, s), t)
-\end{spec}
-Lifting operations is ad hoc
-
-\section{Parsing}
-\citep{hutton-monadic-jfp}
-\begin{spec}
-type Parser = StateT String []
-\end{spec}
-Prove monad laws
-
-Disprove left distributivity for $+\!\!+\!\!+$
-
-|apply expr " 1 - 2 * 3 + 4 "| with $(+\!\!+\!\!+) = (\langle\vert\rangle)$
-
-\section{Probability}
-\citep{ramsey-stochastic}
-\begin{spec}
-type Dist = WriterT (Product Double) []
-\end{spec}
-
-\section{Neural nets}
-
-\section{Automatic differentiation}
-\citep{krawiec-provably}
-
-\exercise{Diff1}
-\citep{claessen-quickcheck}
-
-\exercise{Diff2}
-|randomParams perceptronLoss >>= iterateM_ (optimize 999 perceptronLoss)|
-|randomParams networkLoss >>= iterateM_ (optimize 999 networkLoss)|
-
-\exercise{Diff3}
-\exercise{Diff4}
-\exercise{Diff5}
