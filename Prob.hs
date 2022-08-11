@@ -118,23 +118,23 @@ two_coins = do
   x <- coin (1/2)
   y <- coin (1/2)
   return ((x == 1, y == 1),
-          x == 1 && y == 1)
+          x == 1 || y == 1)
 
 base :: Prob Bool
 #ifdef SOLUTION
-base = MkProb [(True, 1/4), (False, 3/4)]
+base = MkProb [(True, 3/4), (False, 1/4)]
 #else
 base = MkProb _
 #endif
 
 kernel :: Bool -> Prob (Bool, Bool)
-kernel True  = return (True, True)
+kernel False = return (False, False)
 #ifdef SOLUTION
-kernel False = MkProb [((True , False), 1/3),
-                       ((False, True ), 1/3),
-                       ((False, False), 1/3)]
+kernel True  = MkProb [((False, True ), 1/3),
+                       ((True , False), 1/3),
+                       ((True , True ), 1/3)]
 #else
-kernel False = MkProb _
+kernel True  = MkProb _
 #endif
 
 prop_inference = approx two_coins (do both <- base
