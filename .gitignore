@@ -19,6 +19,7 @@
 *.fls
 ln.out
 main.out
+exam.out
 *.toc
 *.fmt
 *.fot
